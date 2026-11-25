@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- الموارد دي بتتنادى من Dart بالاسم، فلازم ماتتشالش وقت تصغير النسخة النهائية -->
 <resources xmlns:tools="http://schemas.android.com/tools"
-    tools:keep="@drawable/ic_stat_murattil,@drawable/splash_logo,@raw/*" />
+    tools:keep="@drawable/ic_stat_murattil,@drawable/splash_logo,@drawable/audio_service_*,@raw/*" />
