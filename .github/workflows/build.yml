@@ -44,6 +44,15 @@ jobs:
         with:
           node-version: "20"
 
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('android/**/*.kts', 'android/gradle/wrapper/gradle-wrapper.properties', 'pubspec.lock') }}
+          restore-keys: gradle-${{ runner.os }}-
+
       - name: Cache mushaf fonts
         uses: actions/cache@v4
         with:
@@ -68,7 +77,13 @@ jobs:
           run flutter analyze --no-fatal-infos --no-fatal-warnings || echo "analyze had errors" >> "$LOG"
           run flutter test || echo "tests failed" >> "$LOG"
           if [ "$status" = ok ]; then
-            run flutter build apk --release --split-per-abi || status=build_failed
+            # المستودعات أحيانًا بترجع 429 (ضغط) — نعيد المحاولة بعد شوية
+            ok=0
+            for attempt in 1 2 3; do
+              if run flutter build apk --release --split-per-abi; then ok=1; break; fi
+              echo "retry build after network error ($attempt)" >> "$LOG"; sleep 60
+            done
+            [ "$ok" = 1 ] || status=build_failed
           fi
           echo "STATUS: $status" >> "$LOG"
           echo "status=$status" >> "$GITHUB_OUTPUT"
