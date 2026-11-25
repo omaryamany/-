@@ -12,15 +12,15 @@ adb shell settings put global animator_duration_scale 0
 adb install -r "$APK" || exit 1
 adb logcat -c
 adb shell monkey -p $PKG -c android.intent.category.LAUNCHER 1
-sleep 20
+sleep 35
 
 shot() { adb exec-out screencap -p > "$OUT/$1.png"; }
 # بيدوّر على عنصر بالنص في شجرة الواجهة (Flutter بيعرض النصوص للـ accessibility) ويضغط عليه
 tap_text() {
   adb shell rm -f /sdcard/ui.xml
-  for _ in 1 2 3; do
-    adb shell uiautomator dump --compressed /sdcard/ui.xml >/dev/null 2>&1 && break
-    sleep 2
+  for _ in 1 2 3 4 5; do
+    adb shell uiautomator dump --compressed /sdcard/ui.xml 2>&1 | grep -q "dumped to" && break
+    sleep 3
   done
   adb pull /sdcard/ui.xml "$OUT/ui.xml" >/dev/null 2>&1 || : > "$OUT/ui.xml"
   local b
