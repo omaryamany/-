@@ -65,7 +65,7 @@ tap_text "الرئيسية"; sleep 2
 adb shell input swipe 540 2000 540 700 400; sleep 2
 tap_text "الاستماع"; sleep 3; shot 11_listen
 tap_text "سورة الفاتحة"; sleep 10; shot 12_playing
-tap_text "سورة الفاتحة · آية ١" || tap_text "آية ١"
+adhb_tap() { :; }; adb shell input tap 825 2238
 sleep 4; shot 13_now_playing
 
 adb logcat -d > "$OUT/logcat.txt"
