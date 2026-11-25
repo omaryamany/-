@@ -9,9 +9,15 @@ import '../../core/ui.dart';
 import '../shell.dart';
 import 'khatma_setup.dart';
 
+/// فتح صفحة الختمة كشاشة مستقلة
+void openKhatma(BuildContext context) {
+  Navigator.of(context).push(MaterialPageRoute(builder: (_) => Scaffold(appBar: AppBar(title: const Text('الختمة')), body: const KhatmaScreen(standalone: true))));
+}
+
 /// صفحة الختمة: التقدّم الكلي، ورد اليوم، الجدول، التذكير، والسجل
 class KhatmaScreen extends StatelessWidget {
-  const KhatmaScreen({super.key});
+  final bool standalone;
+  const KhatmaScreen({super.key, this.standalone = false});
 
   @override
   Widget build(BuildContext context) {
@@ -23,8 +29,7 @@ class KhatmaScreen extends StatelessWidget {
         return SafeArea(
           bottom: false,
           child: ListView(padding: const EdgeInsets.fromLTRB(18, 12, 18, 28), children: [
-            Text('الختمة', style: t.headlineMedium),
-            const SizedBox(height: 14),
+            if (!standalone) ...[Text('الختمة', style: t.headlineMedium), const SizedBox(height: 14)],
             if (!k.active) ...[
               _NoKhatma(),
             ] else ...[

@@ -17,6 +17,14 @@ void openAdhkar(BuildContext context, AdhkarKind kind) {
 /// العدّاد بيتحفظ لحد آخر اليوم (لو خرجت ورجعت تكمّل من مكانك)
 final Map<String, List<int>> _progress = {};
 
+/// تقدّم النهارده في قسم: (اللي خلص، الإجمالي)
+(int, int) adhkarProgress(AdhkarKind k) {
+  final items = adhkarOf(k);
+  final left = _progress['${k.name}:${dayKey(DateTime.now())}'];
+  if (left == null) return (0, items.length);
+  return (left.where((x) => x == 0).length, items.length);
+}
+
 class AdhkarScreen extends StatefulWidget {
   final AdhkarKind kind;
   const AdhkarScreen({super.key, required this.kind});

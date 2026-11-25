@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../core/adhan_sounds.dart';
 import '../../core/arabic.dart';
 import '../../core/cities.dart';
 import '../../core/prayer.dart';
@@ -380,6 +381,24 @@ class _SettingsSheetState extends State<_SettingsSheet> {
               onTap: () => showLocationPicker(context),
             ),
             const Divider(),
+            Text('صوت الأذان', style: t.titleSmall),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.campaign_rounded, color: AppColors.turquoise),
+              title: const Text('الظهر والعصر والمغرب والعشاء'),
+              subtitle: Text(AdhanSound.byId(ps.sound).name),
+              trailing: const Icon(Icons.chevron_left_rounded),
+              onTap: () => showAdhanPicker(context, fajr: false),
+            ),
+            ListTile(
+              contentPadding: EdgeInsets.zero,
+              leading: const Icon(Icons.nights_stay_rounded, color: AppColors.turquoise),
+              title: const Text('الفجر'),
+              subtitle: Text(AdhanSound.byId(ps.fajrSound).name),
+              trailing: const Icon(Icons.chevron_left_rounded),
+              onTap: () => showAdhanPicker(context, fajr: true),
+            ),
+            const Divider(),
             Text('طريقة الحساب', style: t.titleSmall),
             const SizedBox(height: 4),
             RadioGroup<String>(
@@ -446,4 +465,57 @@ class _SettingsSheetState extends State<_SettingsSheet> {
       },
     );
   }
+}
+
+/// اختيار صوت الأذان مع زر تجربة لكل صوت
+void showAdhanPicker(BuildContext context, {required bool fajr}) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    useSafeArea: true,
+    builder: (c) => DraggableScrollableSheet(
+      expand: false,
+      initialChildSize: .8,
+      maxChildSize: .95,
+      builder: (c, sc) => ListenableBuilder(
+        listenable: PrayerStore.instance,
+        builder: (c, _) {
+          final ps = PrayerStore.instance;
+          final selected = fajr ? ps.fajrSound : ps.sound;
+          final groups = <String, List<AdhanSound>>{};
+          for (final a in AdhanSound.all) {
+            groups.putIfAbsent(a.group, () => []).add(a);
+          }
+          return ListView(controller: sc, padding: const EdgeInsets.only(bottom: 24), children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 4),
+              child: Text(fajr ? 'صوت أذان الفجر' : 'صوت الأذان', style: Theme.of(c).textTheme.titleLarge),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+              child: Text('اضغط ▶ للتجربة (بيظهر إشعار بالصوت)، واضغط على الاسم للاختيار.', style: Theme.of(c).textTheme.bodySmall),
+            ),
+            for (final g in groups.entries) ...[
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 4),
+                child: Text(g.key, style: Theme.of(c).textTheme.titleSmall?.copyWith(color: AppColors.turquoise)),
+              ),
+              for (final a in g.value)
+                ListTile(
+                  leading: Icon(selected == a.id ? Icons.radio_button_checked_rounded : Icons.radio_button_off_rounded,
+                      color: selected == a.id ? AppColors.turquoise : null),
+                  title: Text(a.name, style: TextStyle(fontWeight: selected == a.id ? FontWeight.w800 : FontWeight.w500)),
+                  trailing: IconButton(
+                    tooltip: 'تجربة',
+                    icon: const Icon(Icons.play_circle_outline_rounded),
+                    onPressed: () => Reminders.instance.previewAdhan(a.id),
+                  ),
+                  onTap: () => ps.setSound(a.id, fajr: fajr),
+                ),
+            ],
+          ]);
+        },
+      ),
+    ),
+  ).whenComplete(Reminders.instance.stopPreview);
 }

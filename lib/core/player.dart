@@ -24,6 +24,20 @@ class QuranPlayer extends ChangeNotifier {
   int _repeat = 1;
   bool _started = false;
 
+  double speed = 1;
+
+  /// تكرار السورة كلها بدل الانتقال للي بعدها
+  bool surahLoop = false;
+
+  /// مؤقت النوم: وقت الإيقاف، أو «آخر السورة»
+  DateTime? sleepAt;
+  bool sleepEndOfSurah = false;
+  Timer? _sleepTimer;
+
+  int get repeat => _repeat;
+  Stream<Duration> get position => _player.positionStream;
+  Stream<Duration?> get duration => _player.durationStream;
+
   /// الآية اللي بتتقري دلوقتي (null = مفيش تلاوة)
   int? current;
   bool playing = false;
@@ -93,6 +107,7 @@ class QuranPlayer extends ChangeNotifier {
     try {
       // ignore: deprecated_member_use
       await _player.setAudioSource(ConcatenatingAudioSource(children: sources), initialIndex: 0);
+      await _player.setSpeed(speed);
       unawaited(_player.play());
     } catch (e) {
       debugPrint('player: $e');
@@ -105,11 +120,71 @@ class QuranPlayer extends ChangeNotifier {
 
   void _onComplete() {
     final last = _queue.isEmpty ? null : _queue.last;
+    if (sleepEndOfSurah) {
+      setSleep(0);
+      stop();
+      return;
+    }
+    if (surahLoop && _queue.isNotEmpty) {
+      play(_queue.first, to: _to, repeat: _repeat, nextSurah: _nextSurah);
+      return;
+    }
     if (last != null && _nextSurah && last < Quran.totalAyat) {
       play(last + 1, repeat: _repeat);
       return;
     }
     stop();
+  }
+
+  Future<void> setSpeed(double v) async {
+    speed = v;
+    await _player.setSpeed(v);
+    notifyListeners();
+  }
+
+  void toggleSurahLoop() {
+    surahLoop = !surahLoop;
+    notifyListeners();
+  }
+
+  /// تغيير عدد تكرار الآية — بيعيد بناء القائمة من الآية الحالية
+  Future<void> setRepeat(int n) async {
+    _repeat = n.clamp(1, 20);
+    final c = current;
+    if (c != null) {
+      await play(c, to: _to, repeat: _repeat, nextSurah: _nextSurah);
+    } else {
+      notifyListeners();
+    }
+  }
+
+  /// بعد تغيير القارئ: كمّل من نفس الآية بالصوت الجديد
+  Future<void> restartFromCurrent() async {
+    final c = current;
+    if (c != null) await play(c, to: _to, repeat: _repeat, nextSurah: _nextSurah);
+  }
+
+  /// مؤقت النوم بالدقايق (٠ = إلغاء، -١ = آخر السورة)
+  void setSleep(int minutes) {
+    _sleepTimer?.cancel();
+    sleepAt = null;
+    sleepEndOfSurah = minutes == -1;
+    if (minutes > 0) {
+      sleepAt = DateTime.now().add(Duration(minutes: minutes));
+      _sleepTimer = Timer(Duration(minutes: minutes), () {
+        sleepAt = null;
+        stop();
+      });
+    }
+    notifyListeners();
+  }
+
+  Future<void> seek(Duration d) => _player.seek(d);
+
+  /// ترتيب الآية الحالية في سورتها (١..عدد الآيات)
+  ({int ayah, int count, int surah}) get place {
+    final p = Quran.fromGlobal(current ?? 1);
+    return (ayah: p.ayah, count: Quran.surah(p.surah).ayahCount, surah: p.surah);
   }
 
   Future<void> toggle() async {

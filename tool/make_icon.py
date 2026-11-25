@@ -1,7 +1,7 @@
 import math, os, sys
 from PIL import Image, ImageDraw, ImageFilter
 S = 1024  # work canvas
-PINE=(15,92,79); PINE_D=(10,67,57); PINE_L=(22,112,95); GOLD=(201,165,76); GOLD_L=(235,213,143); CREAM=(252,248,238)
+PINE=(30,58,110); PINE_D=(15,31,61); PINE_L=(35,92,134); GOLD=(226,161,59); GOLD_L=(245,211,148); CREAM=(252,248,238); TEAL=(42,157,154)
 
 def star_points(cx, cy, r_out, r_in, n=8, rot=-math.pi/2):
     pts=[]
@@ -27,38 +27,49 @@ def background(size):
     img = Image.alpha_composite(img.convert('RGBA'), ov)
     return img
 
+def arch(cx, top, w, h):
+    """قوس محراب: مستطيل تحت وقوس مدبّب فوق (مضلع ناعم)"""
+    left, right, bottom = cx - w/2, cx + w/2, top + h
+    shoulder = top + h*0.42
+    pts=[(left,bottom),(left,shoulder)]
+    n=40
+    for i in range(n+1):  # منحنى من الكتف الشمال للقمة
+        t=i/n; x=(1-t)**2*left+2*(1-t)*t*left+t*t*cx; y=(1-t)**2*shoulder+2*(1-t)*t*(top+h*0.12)+t*t*top; pts.append((x,y))
+    for i in range(n+1):
+        t=i/n; x=(1-t)**2*cx+2*(1-t)*t*right+t*t*right; y=(1-t)**2*top+2*(1-t)*t*(top+h*0.12)+t*t*shoulder; pts.append((x,y))
+    pts.append((right,bottom))
+    return pts
+
 def foreground(size, scale=1.0):
-    """النجمة الذهبية + الكتاب المفتوح، في منتصف المساحة الآمنة"""
+    """محراب كهرماني + محراب فيروزي جوّه + كتاب مفتوح أبيض"""
     img = Image.new('RGBA',(size,size),(0,0,0,0))
-    d = ImageDraw.Draw(img)
-    cx=cy=size/2
-    R = size*0.30*scale
-    # glow
+    cx=size/2; W=size*0.40*scale; H=size*0.50*scale; top=size/2-H/2
     glow = Image.new('RGBA',(size,size),(0,0,0,0)); gd=ImageDraw.Draw(glow)
-    gd.ellipse([cx-R*1.05,cy-R*1.05,cx+R*1.05,cy+R*1.05], fill=(233,207,139,90))
-    glow = glow.filter(ImageFilter.GaussianBlur(size*0.04))
+    gd.polygon(arch(cx, top-size*0.01, W*1.08, H*1.04), fill=(245,211,148,80))
+    glow = glow.filter(ImageFilter.GaussianBlur(size*0.03))
     img = Image.alpha_composite(img, glow); d = ImageDraw.Draw(img)
-    d.polygon(star_points(cx,cy,R,R*0.74), fill=GOLD)
-    d.polygon(star_points(cx,cy,R*0.88,R*0.65), outline=GOLD_L, width=max(2,int(size*0.006)))
-    # open book
-    bw = R*0.58; bh = R*0.42; top = cy - bh*0.55
-    lw = max(2,int(size*0.012))
+    d.polygon(arch(cx, top, W, H), fill=GOLD)
+    d.polygon(arch(cx, top+H*0.10, W*0.74, H*0.84), fill=TEAL)
+    # كتاب مفتوح
+    bw=W*0.30; bh=H*0.17; by=top+H*0.60
     for side in (-1,1):
-        x0 = cx; x1 = cx + side*bw
-        page = [(x0, top+bh*0.12), (x1, top), (x1, top+bh), (x0, top+bh*1.12)]
+        page=[(cx,by+bh*0.12),(cx+side*bw,by),(cx+side*bw,by+bh),(cx,by+bh*1.12)]
         d.polygon(page, fill=CREAM)
-        # lines on pages
         for k in range(1,4):
-            yy = top + bh*(0.22*k+0.06)
-            d.line([(x0+side*bw*0.16, yy+bh*0.06), (x1-side*bw*0.12, yy-bh*0.02)], fill=(201,165,76), width=max(1,int(size*0.006)))
-    d.line([(cx, top+bh*0.12),(cx, top+bh*1.12)], fill=PINE_D, width=lw)
-    # small stand under book
-    d.polygon([(cx-bw*0.55, top+bh*1.30),(cx, top+bh*1.05),(cx+bw*0.55, top+bh*1.30),(cx, top+bh*1.55)], fill=PINE_D)
+            yy=by+bh*(0.22*k+0.06)
+            d.line([(cx+side*bw*0.16,yy+bh*0.06),(cx+side*bw*0.85,yy-bh*0.02)], fill=GOLD, width=max(1,int(size*0.005)))
+    d.line([(cx,by+bh*0.12),(cx,by+bh*1.12)], fill=PINE_D, width=max(2,int(size*0.008)))
+    # نجمة صغيرة فوق الكتاب
+    r=W*0.07; sy=top+H*0.36
+    star=[]
+    for i in range(16):
+        rr=r if i%2==0 else r*0.45; a=-math.pi/2+i*math.pi/8; star.append((cx+math.cos(a)*rr, sy+math.sin(a)*rr))
+    d.polygon(star, fill=GOLD_L)
     return img
 
 def full_icon(size, rounded=True):
     bg = background(size)
-    fg = foreground(size, scale=1.25)
+    fg = foreground(size, scale=1.3)
     img = Image.alpha_composite(bg, fg)
     if rounded:
         mask = Image.new('L',(size,size),0)

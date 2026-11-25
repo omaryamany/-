@@ -31,6 +31,10 @@ class PrayerStore extends ChangeNotifier {
   /// تنبيه قبل الأذان بكام دقيقة (٠ = متوقف)
   int preMinutes = 0;
 
+  /// صوت الأذان، وصوت مخصوص للفجر
+  String sound = 'egypt_refaat';
+  String fajrSound = 'fajr_cairo';
+
   Timer? _tick;
 
   bool get configured => lat != null && lng != null;
@@ -44,6 +48,8 @@ class PrayerStore extends ChangeNotifier {
     methodId = _p.getString('pr:method') ?? 'egypt';
     hanafi = _p.getBool('pr:hanafi') ?? false;
     preMinutes = _p.getInt('pr:pre') ?? 0;
+    sound = _p.getString('pr:sound') ?? 'egypt_refaat';
+    fajrSound = _p.getString('pr:fajrSound') ?? 'fajr_cairo';
     try {
       final a = jsonDecode(_p.getString('pr:adjust') ?? '{}') as Map;
       adjust = {for (final e in a.entries) Prayer.values.byName(e.key as String): e.value as int};
@@ -70,6 +76,8 @@ class PrayerStore extends ChangeNotifier {
     await _p.setString('pr:method', methodId);
     await _p.setBool('pr:hanafi', hanafi);
     await _p.setInt('pr:pre', preMinutes);
+    await _p.setString('pr:sound', sound);
+    await _p.setString('pr:fajrSound', fajrSound);
     await _p.setString('pr:adjust', jsonEncode(adjust.map((k, v) => MapEntry(k.name, v))));
     await _p.setStringList('pr:adhan', adhan.map((e) => e.name).toList());
     notifyListeners();
@@ -181,6 +189,15 @@ class PrayerStore extends ChangeNotifier {
     return true;
   }
 
+  Future<void> setSound(String id, {bool fajr = false}) async {
+    if (fajr) {
+      fajrSound = id;
+    } else {
+      sound = id;
+    }
+    await _save();
+  }
+
   Future<void> setPre(int minutes) async {
     preMinutes = minutes;
     await _save();
@@ -189,16 +206,16 @@ class PrayerStore extends ChangeNotifier {
   /// جدولة إشعارات أسبوع قدّام (بتتعاد مع كل فتحة للتطبيق ومع أي تغيير)
   Future<void> reschedule() async {
     if (!configured) return;
-    final items = <(DateTime, String, String, bool)>[];
+    final items = <(DateTime, String, String, bool, String)>[];
     final now = DateTime.now();
     for (var i = 0; i < 7; i++) {
       final d = day(DateTime(now.year, now.month, now.day + i));
       for (final p in prayers5) {
         if (!adhan.contains(p)) continue;
         final name = p.arOn(d.date);
-        items.add((d[p], 'حان الآن موعد صلاة $name', place.isEmpty ? 'حيّ على الصلاة' : 'حسب توقيت $place', false));
+        items.add((d[p], 'حان الآن موعد صلاة $name', place.isEmpty ? 'حيّ على الصلاة' : 'حسب توقيت $place', false, p == Prayer.fajr ? fajrSound : sound));
         if (preMinutes > 0) {
-          items.add((d[p].subtract(Duration(minutes: preMinutes)), 'صلاة $name بعد ${minutesLabel(preMinutes)}', 'استعد للصلاة', true));
+          items.add((d[p].subtract(Duration(minutes: preMinutes)), 'صلاة $name بعد ${minutesLabel(preMinutes)}', 'استعد للصلاة', true, 'default'));
         }
       }
     }

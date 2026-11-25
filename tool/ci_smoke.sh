@@ -17,8 +17,12 @@ sleep 20
 shot() { adb exec-out screencap -p > "$OUT/$1.png"; }
 # بيدوّر على عنصر بالنص في شجرة الواجهة (Flutter بيعرض النصوص للـ accessibility) ويضغط عليه
 tap_text() {
-  adb shell uiautomator dump /sdcard/ui.xml >/dev/null 2>&1
-  adb pull /sdcard/ui.xml "$OUT/ui.xml" >/dev/null 2>&1
+  adb shell rm -f /sdcard/ui.xml
+  for _ in 1 2 3; do
+    adb shell uiautomator dump --compressed /sdcard/ui.xml >/dev/null 2>&1 && break
+    sleep 2
+  done
+  adb pull /sdcard/ui.xml "$OUT/ui.xml" >/dev/null 2>&1 || : > "$OUT/ui.xml"
   local b
   b=$(python3 - "$OUT/ui.xml" "$1" <<'PY'
 import re,sys
@@ -46,19 +50,23 @@ shot 01_onboarding
 tap_text "تخطي" || adb shell input tap 100 150
 sleep 5
 shot 02_home
-adb shell input swipe 540 2000 540 800 400; sleep 2
+adb shell input swipe 540 2000 540 900 400; sleep 2
 shot 03_home_scrolled
 tap_text "المصحف"; shot 04_index
 tap_text "سورة البقرة"; sleep 8; shot 05_mushaf
-adb shell input swipe 200 1100 900 1100 300; sleep 6; shot 06_mushaf_next
+adb shell input swipe 200 1200 900 1200 300; sleep 6; shot 06_mushaf_next
 adb shell input keyevent KEYCODE_BACK; sleep 3
-tap_text "الختمة"; shot 07_khatma
-tap_text "الصلاة"; shot 08_prayer
-tap_text "الإعدادات"; shot 09_settings
-tap_text "الرئيسية"
-tap_text "أذكار الصباح"; sleep 3; shot 10_adhkar
+tap_text "الأذكار"; sleep 2; shot 07_adhkar
+tap_text "أذكار الصباح"; sleep 3; shot 08_adhkar_morning
 adb shell input keyevent KEYCODE_BACK; sleep 2
+tap_text "الصلاة"; shot 09_prayer
+tap_text "المزيد"; shot 10_more
+tap_text "الرئيسية"; sleep 2
+adb shell input swipe 540 2000 540 700 400; sleep 2
 tap_text "الاستماع"; sleep 3; shot 11_listen
+tap_text "سورة الفاتحة"; sleep 10; shot 12_playing
+tap_text "يُتلى" || adb shell input tap 540 2050
+sleep 4; shot 13_now_playing
 
 adb logcat -d > "$OUT/logcat.txt"
 grep -E "flutter|FATAL|AndroidRuntime" "$OUT/logcat.txt" | grep -iE "error|exception|fatal|overflow" | head -200 > "$OUT/errors.txt"

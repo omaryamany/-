@@ -103,7 +103,7 @@ class _ShareAyahScreenState extends State<ShareAyahScreen> {
                         const SizedBox(height: 18),
                         Container(height: 1, width: 60, color: st.accent.withValues(alpha: .5)),
                         const SizedBox(height: 8),
-                        Text('مُرتِّل — مصحف وختمة', style: TextStyle(fontFamily: 'Plex', fontSize: 11, color: st.sub)),
+                        Text('مُرتِّل — مصحف وختمة', style: TextStyle(fontFamily: 'Almarai', fontSize: 11, color: st.sub)),
                       ]),
                     ),
                   ]),

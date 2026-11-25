@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../core/khatma.dart';
+import '../core/theme.dart';
 import '../core/quran.dart';
 import '../core/reminders.dart';
 import 'celebration.dart';
@@ -9,7 +10,9 @@ import 'index/index_screen.dart';
 import 'khatma/khatma_screen.dart';
 import 'khatma/khatma_setup.dart';
 import 'mushaf/mushaf_screen.dart';
+import 'adhkar/adhkar_home.dart';
 import 'adhkar/adhkar_screen.dart';
+import 'listen/now_playing.dart';
 import 'listen/listen_screen.dart';
 import 'prayer/prayer_screen.dart';
 import 'settings/settings_screen.dart';
@@ -81,7 +84,7 @@ class _ShellState extends State<Shell> {
     } else if (KhatmaStore.instance.active && !KhatmaStore.instance.finished) {
       openWird(context);
     } else {
-      setState(() => _tab = 2);
+      openKhatma(context);
     }
   }
 
@@ -92,26 +95,90 @@ class _ShellState extends State<Shell> {
     final pages = [
       HomeScreen(onTab: goTo),
       const IndexScreen(),
-      const KhatmaScreen(),
+      const AdhkarHome(),
       const PrayerScreen(),
       const SettingsScreen(),
     ];
     return Scaffold(
       body: IndexedStack(index: _tab, children: pages),
+      extendBody: false,
       bottomNavigationBar: Column(mainAxisSize: MainAxisSize.min, children: [
-        MiniPlayer(safeBottom: false, onOpen: (g) => openMushaf(context, ayah: g)),
-        NavigationBar(
-        selectedIndex: _tab,
-        onDestinationSelected: goTo,
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.home_outlined), selectedIcon: Icon(Icons.home_rounded), label: 'الرئيسية'),
-          NavigationDestination(icon: Icon(Icons.menu_book_outlined), selectedIcon: Icon(Icons.menu_book_rounded), label: 'المصحف'),
-          NavigationDestination(icon: Icon(Icons.track_changes_outlined), selectedIcon: Icon(Icons.track_changes_rounded), label: 'الختمة'),
-          NavigationDestination(icon: Icon(Icons.mosque_outlined), selectedIcon: Icon(Icons.mosque_rounded), label: 'الصلاة'),
-          NavigationDestination(icon: Icon(Icons.settings_outlined), selectedIcon: Icon(Icons.settings_rounded), label: 'الإعدادات'),
-        ],
+        MiniPlayer(safeBottom: false, onOpen: (_) => openNowPlaying(context)),
+        MurattilNavBar(
+          index: _tab,
+          onTap: goTo,
+          items: const [
+            (Icons.home_outlined, Icons.home_rounded, 'الرئيسية'),
+            (Icons.menu_book_outlined, Icons.menu_book_rounded, 'المصحف'),
+            (Icons.spa_outlined, Icons.spa_rounded, 'الأذكار'),
+            (Icons.mosque_outlined, Icons.mosque_rounded, 'الصلاة'),
+            (Icons.grid_view_outlined, Icons.grid_view_rounded, 'المزيد'),
+          ],
         ),
       ]),
+    );
+  }
+}
+
+/// شريط التنقل السفلي العائم (تصميم «مُرتِّل»): كبسولة بأيقونات، والمختار بيتمدّ ويظهر اسمه
+class MurattilNavBar extends StatelessWidget {
+  final int index;
+  final ValueChanged<int> onTap;
+  final List<(IconData, IconData, String)> items;
+  const MurattilNavBar({super.key, required this.index, required this.onTap, required this.items});
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    return SafeArea(
+      top: false,
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(12, 0, 12, 10),
+        padding: const EdgeInsets.all(6),
+        decoration: BoxDecoration(
+          color: dark ? AppColors.nightCard : AppColors.pineDeep,
+          borderRadius: BorderRadius.circular(30),
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: .22), blurRadius: 20, offset: const Offset(0, 8))],
+        ),
+        child: Row(children: [
+          for (var i = 0; i < items.length; i++)
+            Expanded(
+              flex: i == index ? 5 : 3,
+              child: Semantics(
+                label: items[i].$3,
+                button: true,
+                selected: i == index,
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => onTap(i),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 260),
+                    curve: Curves.easeOutCubic,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      color: i == index ? AppColors.turquoise : Colors.transparent,
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                    child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                      Icon(i == index ? items[i].$2 : items[i].$1, color: i == index ? Colors.white : Colors.white70, size: 24),
+                      if (i == index) ...[
+                        const SizedBox(width: 6),
+                        Flexible(
+                          child: Text(items[i].$3,
+                              maxLines: 1,
+                              overflow: TextOverflow.fade,
+                              softWrap: false,
+                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 13)),
+                        ),
+                      ],
+                    ]),
+                  ),
+                ),
+              ),
+            ),
+        ]),
+      ),
     );
   }
 }

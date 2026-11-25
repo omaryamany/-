@@ -1,30 +1,49 @@
 import 'package:flutter/cupertino.dart' show CupertinoPageTransitionsBuilder;
 import 'package:flutter/material.dart';
 
-/// هوية «مُرتِّل»: أخضر صنوبري عميق + ذهبي هادي + ورق كريمي، وثيم ليلي مريح للعين.
+/// هوية «مُرتِّل» (الإصدار ١٫٣): أزرق كوبالتي عميق + فيروزي + كهرماني دافئ + رملي فاتح —
+/// مستوحاة من بلاط إزنيق والمشربيات، ومختلفة عن الأخضر والذهبي المنتشر في تطبيقات المصحف.
+/// (أسماء الثوابت القديمة متسابة زي ما هي عشان باقي الكود، بس قيمها اتغيرت)
 class AppColors {
-  static const pine = Color(0xFF0F5C4F);
-  static const pineDeep = Color(0xFF0A4339);
-  static const pineLight = Color(0xFF3FA08C);
-  static const gold = Color(0xFFC9A54C);
-  static const goldLight = Color(0xFFE8D39A);
-  static const cream = Color(0xFFF8F4EA);
-  static const ink = Color(0xFF1C2421);
-  static const night = Color(0xFF0B1210);
-  static const nightCard = Color(0xFF141D1A);
-  static const rose = Color(0xFFD64561);
-  static const amber = Color(0xFFE09A1F);
+  /// اللون الأساسي — أزرق كوبالتي
+  static const pine = Color(0xFF1E3A6E);
+
+  /// أزرق ليلي عميق
+  static const pineDeep = Color(0xFF0F1F3D);
+
+  /// فيروزي (لمسات وتمييز)
+  static const pineLight = Color(0xFF2A9D9A);
+  static const turquoise = Color(0xFF2A9D9A);
+
+  /// كهرماني دافئ (بدل الذهبي)
+  static const gold = Color(0xFFE2A13B);
+  static const goldLight = Color(0xFFF5D394);
+
+  /// رملي فاتح (خلفية)
+  static const cream = Color(0xFFF5F0E6);
+  static const ink = Color(0xFF17202F);
+  static const night = Color(0xFF0A1120);
+  static const nightCard = Color(0xFF121C30);
+  static const rose = Color(0xFFD9573F);
+  static const amber = Color(0xFFE08A1F);
 
   static const heroGradient = LinearGradient(
     begin: Alignment.topRight,
     end: Alignment.bottomLeft,
-    colors: [Color(0xFF0E5547), pine, Color(0xFF16705F)],
+    colors: [Color(0xFF132852), Color(0xFF1E3A6E), Color(0xFF235C86)],
   );
 
   static const goldGradient = LinearGradient(
     begin: Alignment.topRight,
     end: Alignment.bottomLeft,
-    colors: [Color(0xFFEBD58F), gold, Color(0xFFA6852F)],
+    colors: [Color(0xFFF7D798), gold, Color(0xFFC9822A)],
+  );
+
+  /// تدرّج فيروزي (للتقدّم والنجاح)
+  static const tealGradient = LinearGradient(
+    begin: Alignment.topRight,
+    end: Alignment.bottomLeft,
+    colors: [Color(0xFF5CC6BF), turquoise, Color(0xFF1C7471)],
   );
 }
 
@@ -86,14 +105,14 @@ class AppTheme {
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           minimumSize: const Size(48, 52),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: const StadiumBorder(),
           textStyle: text.titleMedium,
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           minimumSize: const Size(48, 52),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: const StadiumBorder(),
           textStyle: text.titleMedium,
         ),
       ),

@@ -6,6 +6,7 @@ import '../../core/quran.dart';
 import '../../core/store.dart';
 import '../../core/theme.dart';
 import '../../core/ui.dart';
+import 'now_playing.dart';
 
 void openListen(BuildContext context) {
   Navigator.of(context).push(MaterialPageRoute(builder: (_) => const ListenScreen()));
@@ -35,7 +36,7 @@ class _ListenScreenState extends State<ListenScreen> {
         final list = q.isEmpty ? Quran.surahs : Quran.surahs.where((s) => normalizeArabic(s.name).contains(q)).toList();
         return Scaffold(
           appBar: AppBar(title: const Text('الاستماع')),
-          bottomNavigationBar: const MiniPlayer(),
+          bottomNavigationBar: MiniPlayer(onOpen: (_) => openNowPlaying(context)),
           body: Column(children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
@@ -90,8 +91,8 @@ class _ListenScreenState extends State<ListenScreen> {
 }
 
 /// قائمة القرّاء
-void showReciterSheet(BuildContext context) {
-  showModalBottomSheet(
+Future<void> showReciterSheet(BuildContext context) {
+  return showModalBottomSheet(
     context: context,
     isScrollControlled: true,
     builder: (c) {

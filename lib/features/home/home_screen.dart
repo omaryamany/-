@@ -9,6 +9,7 @@ import '../../core/quran.dart';
 import '../../core/store.dart';
 import '../../core/theme.dart';
 import '../../core/ui.dart';
+import '../khatma/khatma_screen.dart';
 import '../khatma/khatma_setup.dart';
 import '../adhkar/adhkar_screen.dart';
 import '../listen/listen_screen.dart';
@@ -177,7 +178,7 @@ class _WirdCard extends StatelessWidget {
 
     if (k.finished) {
       return HeroCard(
-        onTap: () => onTab(2),
+        onTap: () => openKhatma(context),
         child: Row(children: [
           const Icon(Icons.workspace_premium_rounded, size: 46, color: AppColors.goldLight),
           const SizedBox(width: 14),
@@ -247,7 +248,7 @@ class _WirdCard extends StatelessWidget {
           const SizedBox(width: 10),
           IconButton.outlined(
             style: IconButton.styleFrom(side: const BorderSide(color: Colors.white54), minimumSize: const Size(52, 52)),
-            onPressed: () => onTab(2),
+            onPressed: () => openKhatma(context),
             icon: const Icon(Icons.insights_rounded, color: Colors.white),
             tooltip: 'تفاصيل الختمة',
           ),

@@ -8,7 +8,7 @@ import 'theme.dart';
 
 /// مكوّنات الواجهة المشتركة — هوية بصرية واحدة لكل الشاشات.
 
-/// زخرفة هندسية إسلامية (نجمة ثمانية متكررة) بشفافية خفيفة
+/// زخرفة مشربية: شبكة معيّنات متداخلة بدوائر صغيرة عند التقاطعات
 class PatternPainter extends CustomPainter {
   final Color color;
   final double cell;
@@ -20,19 +20,27 @@ class PatternPainter extends CustomPainter {
       ..color = color
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1;
+    final h = cell / 2;
     for (double y = -cell; y < size.height + cell; y += cell) {
       for (double x = -cell; x < size.width + cell; x += cell) {
-        final c = Offset(x + cell / 2, y + cell / 2);
-        final r = cell * .36;
-        final path = Path();
-        for (int i = 0; i < 16; i++) {
-          final rr = i.isEven ? r : r * .62;
-          final a = i * math.pi / 8;
-          final pt = c + Offset(math.cos(a) * rr, math.sin(a) * rr);
-          i == 0 ? path.moveTo(pt.dx, pt.dy) : path.lineTo(pt.dx, pt.dy);
-        }
-        path.close();
-        canvas.drawPath(path, p);
+        // معيّن كبير
+        final d = Path()
+          ..moveTo(x + h, y)
+          ..lineTo(x + cell, y + h)
+          ..lineTo(x + h, y + cell)
+          ..lineTo(x, y + h)
+          ..close();
+        canvas.drawPath(d, p);
+        // معيّن صغير جوّه
+        final q = cell * .18;
+        final d2 = Path()
+          ..moveTo(x + h, y + h - q)
+          ..lineTo(x + h + q, y + h)
+          ..lineTo(x + h, y + h + q)
+          ..lineTo(x + h - q, y + h)
+          ..close();
+        canvas.drawPath(d2, p);
+        canvas.drawCircle(Offset(x, y), cell * .07, p);
       }
     }
   }
@@ -41,34 +49,67 @@ class PatternPainter extends CustomPainter {
   bool shouldRepaint(covariant PatternPainter old) => old.color != color;
 }
 
-/// نجمة ثمانية (شعار صغير / زخرفة رقم)
+/// شعار «مُرتِّل»: محراب (قوس مدبّب فوق مستطيل) — مليان أو محدد
 class StarPainter extends CustomPainter {
   final Color color;
   final bool fill;
   const StarPainter(this.color, {this.fill = false});
 
+  static Path archPath(Size s) {
+    final w = s.width, h = s.height;
+    final left = w * .14, right = w * .86, bottom = h * .96, shoulder = h * .42, top = h * .04;
+    return Path()
+      ..moveTo(left, bottom)
+      ..lineTo(left, shoulder)
+      ..quadraticBezierTo(left, h * .16, w / 2, top)
+      ..quadraticBezierTo(right, h * .16, right, shoulder)
+      ..lineTo(right, bottom)
+      ..close();
+  }
+
   @override
   void paint(Canvas canvas, Size s) {
-    final c = s.center(Offset.zero);
-    final r = s.shortestSide / 2 - 1;
-    final path = Path();
-    for (int i = 0; i < 16; i++) {
-      final rr = i.isEven ? r : r * .78;
-      final a = i * math.pi / 8 - math.pi / 2;
-      final pt = c + Offset(math.cos(a) * rr, math.sin(a) * rr);
-      i == 0 ? path.moveTo(pt.dx, pt.dy) : path.lineTo(pt.dx, pt.dy);
-    }
-    path.close();
     canvas.drawPath(
-        path,
+        archPath(s),
         Paint()
           ..color = color
           ..style = fill ? PaintingStyle.fill : PaintingStyle.stroke
-          ..strokeWidth = 1.3);
+          ..strokeWidth = 1.4
+          ..strokeJoin = StrokeJoin.round);
   }
 
   @override
   bool shouldRepaint(covariant StarPainter o) => o.color != color || o.fill != fill;
+}
+
+/// مسدّس بزوايا ناعمة (لأرقام السور والأجزاء)
+class _HexPainter extends CustomPainter {
+  final Color color;
+  const _HexPainter(this.color);
+
+  @override
+  void paint(Canvas canvas, Size s) {
+    final c = s.center(Offset.zero);
+    final r = s.shortestSide / 2 - 1.5;
+    final path = Path();
+    for (var i = 0; i < 6; i++) {
+      final a = math.pi / 6 + i * math.pi / 3;
+      final pt = c + Offset(math.cos(a) * r, math.sin(a) * r);
+      i == 0 ? path.moveTo(pt.dx, pt.dy) : path.lineTo(pt.dx, pt.dy);
+    }
+    path.close();
+    canvas.drawPath(path, Paint()..color = color.withValues(alpha: .10));
+    canvas.drawPath(
+        path,
+        Paint()
+          ..color = color
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.3
+          ..strokeJoin = StrokeJoin.round);
+  }
+
+  @override
+  bool shouldRepaint(covariant _HexPainter o) => o.color != color;
 }
 
 /// رقم داخل نجمة (رقم السورة / الجزء)
@@ -85,7 +126,7 @@ class StarNumber extends StatelessWidget {
       width: size,
       height: size,
       child: CustomPaint(
-        painter: StarPainter(c),
+        painter: _HexPainter(c),
         child: Center(
           child: Text(arDigits(number), style: TextStyle(fontSize: size * .32, fontWeight: FontWeight.w700, color: c, height: 1)),
         ),
@@ -106,8 +147,13 @@ class HeroCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         gradient: AppColors.heroGradient,
-        borderRadius: BorderRadius.circular(28),
-        boxShadow: [BoxShadow(color: AppColors.pine.withValues(alpha: .28), blurRadius: 28, offset: const Offset(0, 12))],
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(32),
+          topRight: Radius.circular(32),
+          bottomLeft: Radius.circular(32),
+          bottomRight: Radius.circular(10),
+        ),
+        boxShadow: [BoxShadow(color: AppColors.pine.withValues(alpha: .30), blurRadius: 26, offset: const Offset(0, 12))],
       ),
       clipBehavior: Clip.antiAlias,
       child: Material(
@@ -116,13 +162,23 @@ class HeroCard extends StatelessWidget {
           onTap: onTap,
           child: Stack(children: [
             Positioned.fill(child: CustomPaint(painter: PatternPainter(color: Colors.white.withValues(alpha: .06)))),
+            // قوس محراب فيروزي في الركن + توهّج كهرماني خفيف
             PositionedDirectional(
-              end: -50,
-              top: -50,
-              child: Container(
-                width: 170,
-                height: 170,
-                decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.gold.withValues(alpha: .16)),
+              end: 14,
+              top: -24,
+              child: SizedBox(
+                width: 110,
+                height: 150,
+                child: CustomPaint(painter: StarPainter(AppColors.turquoise.withValues(alpha: .45))),
+              ),
+            ),
+            PositionedDirectional(
+              end: 34,
+              top: 6,
+              child: SizedBox(
+                width: 70,
+                height: 100,
+                child: CustomPaint(painter: StarPainter(AppColors.gold.withValues(alpha: .35))),
               ),
             ),
             Padding(
@@ -151,13 +207,13 @@ class SoftCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: color ?? cs.surface,
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(24),
         border: Border.all(color: cs.outlineVariant.withValues(alpha: dark ? .25 : .4)),
         boxShadow: dark ? null : [BoxShadow(color: const Color(0xFF0F2A26).withValues(alpha: .05), blurRadius: 18, offset: const Offset(0, 8))],
       ),
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(24),
         clipBehavior: Clip.antiAlias,
         child: InkWell(onTap: onTap, child: Padding(padding: padding, child: child)),
       ),
@@ -215,7 +271,7 @@ class _RingPainter extends CustomPainter {
       math.pi * 2 * math.max(v, .015),
       false,
       Paint()
-        ..shader = SweepGradient(colors: AppColors.goldGradient.colors, transform: const GradientRotation(-math.pi / 2)).createShader(rect)
+        ..shader = const SweepGradient(colors: [AppColors.turquoise, AppColors.goldLight, AppColors.gold, AppColors.turquoise], transform: GradientRotation(-math.pi / 2)).createShader(rect)
         ..style = PaintingStyle.stroke
         ..strokeCap = StrokeCap.round
         ..strokeWidth = stroke,
@@ -237,7 +293,10 @@ class SectionTitle extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(4, 22, 4, 10),
       child: Row(children: [
-        Container(width: 4, height: 20, decoration: BoxDecoration(gradient: AppColors.goldGradient, borderRadius: BorderRadius.circular(4))),
+        Transform.rotate(
+          angle: math.pi / 4,
+          child: Container(width: 11, height: 11, decoration: BoxDecoration(gradient: AppColors.tealGradient, borderRadius: BorderRadius.circular(2.5))),
+        ),
         const SizedBox(width: 10),
         Expanded(child: Text(title, style: Theme.of(context).textTheme.titleLarge)),
         if (action != null) TextButton(onPressed: onAction, child: Text(action!)),
