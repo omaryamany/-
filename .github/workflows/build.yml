@@ -68,36 +68,58 @@ jobs:
           run flutter analyze --no-fatal-infos --no-fatal-warnings || echo "analyze had errors" >> "$LOG"
           run flutter test || echo "tests failed" >> "$LOG"
           if [ "$status" = ok ]; then
-            run flutter build apk --release || status=build_failed
+            run flutter build apk --release --split-per-abi || status=build_failed
           fi
           echo "STATUS: $status" >> "$LOG"
           echo "status=$status" >> "$GITHUB_OUTPUT"
           ls -la build/app/outputs/flutter-apk/ >> "$LOG" 2>&1
-
-      - name: Save log to murattil-ci branch
-        if: always()
-        run: |
-          mkdir -p /tmp/ci && cd /tmp/ci && git init -q
-          git config user.name "murattil-ci"
-          git config user.email "murattil-ci@users.noreply.github.com"
-          cp "$GITHUB_WORKSPACE/ci-log.txt" log.txt || echo "no log" > log.txt
-          echo "${GITHUB_SHA} ${{ steps.build.outputs.status }}" > status.txt
-          git add . && git commit -qm "ci ${GITHUB_SHA}"
-          git push -f "https://x-access-token:${{ github.token }}@github.com/${GITHUB_REPOSITORY}.git" HEAD:ci-log
 
       - name: Publish APK release
         if: steps.build.outputs.status == 'ok'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          cp build/app/outputs/flutter-apk/app-release.apk murattil.apk
+          cp build/app/outputs/flutter-apk/app-arm64-v8a-release.apk murattil.apk
+          cp build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk murattil-old-phones.apk
           gh release delete murattil-latest -y --cleanup-tag || true
-          gh release create murattil-latest murattil.apk --target "$GITHUB_SHA" --prerelease \
+          gh release create murattil-latest murattil.apk murattil-old-phones.apk --target "$GITHUB_SHA" --prerelease \
             --title "مُرتِّل — آخر نسخة تجريبية" \
-            --notes "نسخة تجريبية اتبنت تلقائيًا من آخر تعديل. نزّل murattil.apk وثبّته على الموبايل."
+            --notes "نسخة تجريبية اتبنت تلقائيًا من آخر تعديل. نزّل murattil.apk وثبّته على الموبايل (لو الموبايل قديم جدًا ومارضيش يثبّت، جرّب murattil-old-phones.apk)."
+
+      - name: Enable KVM
+        if: steps.build.outputs.status == 'ok'
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules && sudo udevadm trigger --name-match=kvm
+
+      - name: Smoke test on emulator
+        if: steps.build.outputs.status == 'ok'
+        continue-on-error: true
+        timeout-minutes: 25
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          script: OUT=$GITHUB_WORKSPACE/smoke bash tool/ci_smoke.sh build/app/outputs/flutter-apk/app-x86_64-release.apk > $GITHUB_WORKSPACE/smoke-log.txt 2>&1 || true
+
+      - name: Save log to ci-log branch
+        if: always()
+        run: |
+          mkdir -p /tmp/ci && cd /tmp/ci && git init -q
+          git config user.name "murattil-ci"
+          git config user.email "murattil-ci@users.noreply.github.com"
+          cp "$GITHUB_WORKSPACE/ci-log.txt" log.txt || echo "no log" > log.txt
+          cp "$GITHUB_WORKSPACE/smoke-log.txt" smoke-log.txt 2>/dev/null || true
+          if [ -d "$GITHUB_WORKSPACE/smoke" ]; then mkdir -p smoke && cp "$GITHUB_WORKSPACE"/smoke/*.png "$GITHUB_WORKSPACE"/smoke/*.txt smoke/ 2>/dev/null || true; fi
+          echo "${GITHUB_SHA} ${{ steps.build.outputs.status }}" > status.txt
+          git add . && git commit -qm "ci ${GITHUB_SHA}"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${GITHUB_REPOSITORY}.git" HEAD:ci-log
 
       - uses: actions/upload-artifact@v4
         if: steps.build.outputs.status == 'ok'
         with:
           name: murattil-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+          path: build/app/outputs/flutter-apk/*.apk
