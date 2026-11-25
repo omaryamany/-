@@ -23,14 +23,19 @@ tap_text() {
   b=$(python3 - "$OUT/ui.xml" "$1" <<'PY'
 import re,sys
 xml=open(sys.argv[1],encoding='utf-8').read(); t=sys.argv[2]
+nodes=[]
 for m in re.finditer(r'<node [^>]*>', xml):
     n=m.group(0)
     txt=re.search(r'text="([^"]*)"',n); cd=re.search(r'content-desc="([^"]*)"',n)
-    s=(txt.group(1) if txt else '')+' '+(cd.group(1) if cd else '')
-    if t in s:
-        b=re.search(r'bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"',n)
-        if b:
-            x1,y1,x2,y2=map(int,b.groups()); print((x1+x2)//2,(y1+y2)//2); break
+    labels=[x.strip() for x in ((txt.group(1) if txt else ''), (cd.group(1) if cd else '')) if x.strip()]
+    b=re.search(r'bounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"',n)
+    if b and labels: nodes.append((labels, tuple(map(int,b.groups()))))
+# الأول: تطابق كامل (أو أول سطر من الوصف)، وبعدين: أقصر نص فيه الكلمة
+exact=[b for l,b in nodes if any(x==t or x.split('\n')[0]==t for x in l)]
+part=sorted([(min(len(x) for x in l if t in x),b) for l,b in nodes if any(t in x for x in l)])
+pick=exact[0] if exact else (part[0][1] if part else None)
+if pick:
+    x1,y1,x2,y2=pick; print((x1+x2)//2,(y1+y2)//2)
 PY
 )
   if [ -n "$b" ]; then adb shell input tap $b; sleep 4; return 0; fi
@@ -41,10 +46,10 @@ shot 01_onboarding
 tap_text "تخطي" || adb shell input tap 100 150
 sleep 5
 shot 02_home
-adb shell input swipe 540 1600 540 600 400; sleep 2
+adb shell input swipe 540 2000 540 800 400; sleep 2
 shot 03_home_scrolled
 tap_text "المصحف"; shot 04_index
-tap_text "البقرة"; sleep 8; shot 05_mushaf
+tap_text "سورة البقرة"; sleep 8; shot 05_mushaf
 adb shell input swipe 200 1100 900 1100 300; sleep 6; shot 06_mushaf_next
 adb shell input keyevent KEYCODE_BACK; sleep 3
 tap_text "الختمة"; shot 07_khatma
