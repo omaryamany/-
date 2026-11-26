@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -163,61 +166,67 @@ class Reminders extends ChangeNotifier {
 
   Future<bool> askPermission() => _askPermission();
 
-  /// قناة إشعار لكل صوت أذان (صوت القناة مايتغيرش بعد إنشائها في أندرويد)
-  NotificationDetails _adhanDetails(String soundId) {
+  /// الأذان بيشتغل من خدمة أندرويد (مش صوت إشعار): كامل وبصوت المنبّه، وبمستوى الصوت المختار
+  static const _adhanCh = MethodChannel('murattil/adhan');
+
+  /// تجربة صوت أذان بنفس طريقة التشغيل في وقت الصلاة
+  Future<void> previewAdhan(String soundId, {int volume = 90}) async {
+    await _askPermission();
     final snd = AdhanSound.byId(soundId);
-    return NotificationDetails(
-      android: AndroidNotificationDetails(
-        'adhan_${snd.id}',
-        'الأذان — ${snd.name}',
-        channelDescription: 'تنبيه دخول وقت الصلاة',
-        importance: Importance.max,
-        priority: Priority.max,
-        category: AndroidNotificationCategory.alarm,
-        audioAttributesUsage: AudioAttributesUsage.alarm,
-        playSound: true,
-        sound: snd.raw == null ? null : RawResourceAndroidNotificationSound(snd.raw!),
-        color: const Color(0xFF1E3A6E),
-      ),
-    );
-  }
-
-  /// تجربة صوت أذان (إشعار فوري بنفس القناة)
-  Future<void> previewAdhan(String soundId) async {
-    if (!await _askPermission()) return;
-    await _n.cancel(998);
-    await _n.show(998, 'تجربة صوت الأذان', AdhanSound.byId(soundId).name, _adhanDetails(soundId), payload: 'prayer');
-  }
-
-  Future<void> stopPreview() => _n.cancel(998);
-
-  /// جدولة إشعارات الصلوات (بتمسح القديمة الأول). كل عنصر: (الوقت، العنوان، النص، قبل الأذان؟، صوت الأذان)
-  Future<void> schedulePrayers(List<(DateTime, String, String, bool, String)> items) async {
     try {
+      await _adhanCh.invokeMethod('play', {'sound': snd.raw ?? '', 'title': 'تجربة صوت الأذان', 'body': snd.name, 'volume': volume});
+    } catch (e) {
+      debugPrint('adhan preview: $e');
+    }
+  }
+
+  Future<void> stopPreview() async {
+    try {
+      await _adhanCh.invokeMethod('stop');
+    } catch (_) {}
+  }
+
+  /// جدولة الصلوات: الأذان نفسه بمنبّهات النظام (خدمة التشغيل)، والتنبيه قبل الأذان إشعار عادي.
+  /// كل عنصر: (الوقت، العنوان، النص، قبل الأذان؟، صوت الأذان)
+  Future<void> schedulePrayers(List<(DateTime, String, String, bool, String)> items, {int volume = 90}) async {
+    try {
+      // مسح القديم (ومنه إشعارات الأذان من النسخ السابقة)
       for (var i = 0; i < 200; i++) {
         await _n.cancel(_adhanBase + i);
       }
-      if (items.isEmpty) return;
       final exact = await exactAllowed();
       final mode = exact ? AndroidScheduleMode.exactAllowWhileIdle : AndroidScheduleMode.inexactAllowWhileIdle;
       final now = DateTime.now();
-      var adhanIdx = 0, preIdx = 0;
+      final native = <Map<String, Object>>[];
+      var preIdx = 0;
       for (final (at, title, body, pre, sound) in items) {
         if (!at.isAfter(now)) continue;
-        final id = pre ? _adhanBase + 100 + preIdx++ : _adhanBase + adhanIdx++;
-        if (id >= _adhanBase + 200 || (!pre && adhanIdx > 100)) continue;
+        if (!pre) {
+          if (native.length < 100) {
+            native.add({
+              'id': native.length,
+              'at': at.millisecondsSinceEpoch,
+              'title': title,
+              'body': body,
+              'sound': AdhanSound.byId(sound).raw ?? '',
+              'volume': volume,
+            });
+          }
+          continue;
+        }
+        final id = _adhanBase + 100 + preIdx++;
+        if (id >= _adhanBase + 200) continue;
         await _n.zonedSchedule(
           id,
           title,
           body,
           tz.TZDateTime.from(at, tz.local),
-          pre
-              ? _details('prayer_pre', 'قبل الأذان', 'تنبيه قبل موعد الصلاة')
-              : _adhanDetails(sound),
+          _details('prayer_pre', 'قبل الأذان', 'تنبيه قبل موعد الصلاة'),
           androidScheduleMode: mode,
           payload: 'prayer',
         );
       }
+      await _adhanCh.invokeMethod('schedule', {'items': jsonEncode(native)});
     } catch (e) {
       debugPrint('prayer notifications: $e');
     }

@@ -88,6 +88,19 @@ tap_text "الأذكار"; sleep 2; shot 23_small_adhkar
 tap_text "المسبحة"; sleep 3; shot 24_small_tasbih
 adb shell wm size reset; adb shell wm density reset; adb shell settings put system font_scale 1.0
 
+# الأذان: تشغيل منبّه الأذان مباشرة والتأكد إن الصوت شغال على مسار المنبّه
+adb shell pm grant $PKG android.permission.POST_NOTIFICATIONS || true
+adb shell media volume --stream 4 --set 2 || true
+adb root >/dev/null 2>&1; sleep 4; adb wait-for-device
+adb shell am broadcast -n $PKG/com.murattil.murattil.AdhanReceiver -a com.murattil.quran.ADHAN_ALARM --es sound adhan_egypt_refaat --es title "حان الآن موعد صلاة العصر" --es body test --ei volume 90
+sleep 6
+adb shell cmd statusbar expand-notifications; sleep 2; shot 30_adhan_notification
+adb shell dumpsys audio > "$OUT/audio.txt" 2>&1
+adb shell dumpsys media.audio_flinger > "$OUT/flinger.txt" 2>&1
+adb shell cmd statusbar collapse
+adb shell am broadcast -n $PKG/com.murattil.murattil.AdhanReceiver -a com.murattil.quran.ADHAN_STOP; sleep 3
+adb shell dumpsys audio | grep -iE "STREAM_ALARM" -A4 | head -20 > "$OUT/alarm_after.txt" 2>&1
+
 adb logcat -d > "$OUT/logcat.txt"
-grep -E "flutter|FATAL|AndroidRuntime" "$OUT/logcat.txt" | grep -iE "error|exception|fatal|overflow" | head -200 > "$OUT/errors.txt"
+grep -E "flutter|FATAL|AndroidRuntime|AdhanService|murattil" "$OUT/logcat.txt" | grep -iE "error|exception|fatal|overflow" | head -200 > "$OUT/errors.txt"
 echo "smoke done"

@@ -493,7 +493,17 @@ void showAdhanPicker(BuildContext context, {required bool fajr}) {
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
-              child: Text('اضغط ▶ للتجربة (بيظهر إشعار بالصوت)، واضغط على الاسم للاختيار.', style: Theme.of(c).textTheme.bodySmall),
+              child: Text('اضغط ▶ للتجربة، واضغط على الاسم للاختيار. الأذان بيشتغل كامل على صوت المنبّه.', style: Theme.of(c).textTheme.bodySmall),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 4, 12, 0),
+              child: Row(children: [
+                const SizedBox(width: 8),
+                const Icon(Icons.volume_up_rounded, color: AppColors.turquoise),
+                const SizedBox(width: 6),
+                Text('مستوى الصوت', style: Theme.of(c).textTheme.titleSmall),
+                Expanded(child: _VolumeSlider(initial: ps.volume)),
+              ]),
             ),
             for (final g in groups.entries) ...[
               Padding(
@@ -508,7 +518,7 @@ void showAdhanPicker(BuildContext context, {required bool fajr}) {
                   trailing: IconButton(
                     tooltip: 'تجربة',
                     icon: const Icon(Icons.play_circle_outline_rounded),
-                    onPressed: () => Reminders.instance.previewAdhan(a.id),
+                    onPressed: () => Reminders.instance.previewAdhan(a.id, volume: ps.volume),
                   ),
                   onTap: () => ps.setSound(a.id, fajr: fajr),
                 ),
@@ -518,4 +528,35 @@ void showAdhanPicker(BuildContext context, {required bool fajr}) {
       ),
     ),
   ).whenComplete(Reminders.instance.stopPreview);
+}
+
+/// مستوى صوت الأذان: بيتحفظ لما تسيب الشريط (عشان الجدولة ماتتعادش مع كل حركة)
+class _VolumeSlider extends StatefulWidget {
+  final int initial;
+  const _VolumeSlider({required this.initial});
+  @override
+  State<_VolumeSlider> createState() => _VolumeSliderState();
+}
+
+class _VolumeSliderState extends State<_VolumeSlider> {
+  late double _v = widget.initial.toDouble();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(children: [
+      Expanded(
+        child: Slider(
+          value: _v,
+          min: 10,
+          max: 100,
+          divisions: 9,
+          activeColor: AppColors.turquoise,
+          label: '${arDigits(_v.round())}٪',
+          onChanged: (v) => setState(() => _v = v),
+          onChangeEnd: (v) => PrayerStore.instance.setVolume(v.round()),
+        ),
+      ),
+      SizedBox(width: 44, child: Text('${arDigits(_v.round())}٪', textAlign: TextAlign.center)),
+    ]);
+  }
 }

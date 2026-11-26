@@ -35,6 +35,9 @@ class PrayerStore extends ChangeNotifier {
   String sound = 'egypt_refaat';
   String fajrSound = 'fajr_cairo';
 
+  /// مستوى صوت الأذان (٪ من أقصى صوت المنبّه) — بيتطبّق وقت الأذان بس وبعدين يرجع زي ما كان
+  int volume = 90;
+
   Timer? _tick;
 
   bool get configured => lat != null && lng != null;
@@ -50,6 +53,7 @@ class PrayerStore extends ChangeNotifier {
     preMinutes = _p.getInt('pr:pre') ?? 0;
     sound = _p.getString('pr:sound') ?? 'egypt_refaat';
     fajrSound = _p.getString('pr:fajrSound') ?? 'fajr_cairo';
+    volume = (_p.getInt('pr:volume') ?? 90).clamp(10, 100);
     try {
       final a = jsonDecode(_p.getString('pr:adjust') ?? '{}') as Map;
       adjust = {for (final e in a.entries) Prayer.values.byName(e.key as String): e.value as int};
@@ -78,6 +82,7 @@ class PrayerStore extends ChangeNotifier {
     await _p.setInt('pr:pre', preMinutes);
     await _p.setString('pr:sound', sound);
     await _p.setString('pr:fajrSound', fajrSound);
+    await _p.setInt('pr:volume', volume);
     await _p.setString('pr:adjust', jsonEncode(adjust.map((k, v) => MapEntry(k.name, v))));
     await _p.setStringList('pr:adhan', adhan.map((e) => e.name).toList());
     notifyListeners();
@@ -198,6 +203,11 @@ class PrayerStore extends ChangeNotifier {
     await _save();
   }
 
+  Future<void> setVolume(int v) async {
+    volume = v.clamp(10, 100);
+    await _save();
+  }
+
   Future<void> setPre(int minutes) async {
     preMinutes = minutes;
     await _save();
@@ -219,6 +229,6 @@ class PrayerStore extends ChangeNotifier {
         }
       }
     }
-    await Reminders.instance.schedulePrayers(items);
+    await Reminders.instance.schedulePrayers(items, volume: volume);
   }
 }
