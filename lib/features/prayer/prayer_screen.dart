@@ -505,6 +505,7 @@ void showAdhanPicker(BuildContext context, {required bool fajr}) {
                 Expanded(child: _VolumeSlider(initial: ps.volume)),
               ]),
             ),
+            const _ExactAlarmHint(),
             for (final g in groups.entries) ...[
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 12, 20, 4),
@@ -558,5 +559,56 @@ class _VolumeSliderState extends State<_VolumeSlider> {
       ),
       SizedBox(width: 44, child: Text('${arDigits(_v.round())}٪', textAlign: TextAlign.center)),
     ]);
+  }
+}
+
+/// الأذان مايشتغلش في ميعاده بالظبط (ولا بصوته الكامل) غير بإذن «المنبّهات والتذكيرات»
+class _ExactAlarmHint extends StatefulWidget {
+  const _ExactAlarmHint();
+  @override
+  State<_ExactAlarmHint> createState() => _ExactAlarmHintState();
+}
+
+class _ExactAlarmHintState extends State<_ExactAlarmHint> with WidgetsBindingObserver {
+  bool _ok = true;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _check();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) _check();
+  }
+
+  Future<void> _check() async {
+    final v = await Reminders.instance.exactAllowed();
+    if (mounted) setState(() => _ok = v);
+    if (v) PrayerStore.instance.reschedule();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_ok) return const SizedBox.shrink();
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 4, 16, 4),
+      padding: const EdgeInsets.fromLTRB(14, 10, 10, 10),
+      decoration: BoxDecoration(color: AppColors.amber.withValues(alpha: .14), borderRadius: BorderRadius.circular(16)),
+      child: Row(children: [
+        const Icon(Icons.alarm_rounded, color: AppColors.amber),
+        const SizedBox(width: 10),
+        const Expanded(child: Text('عشان الأذان يشتغل في ميعاده وبصوت عالي، اسمح للتطبيق بـ«المنبّهات والتذكيرات».')),
+        TextButton(onPressed: () => Reminders.instance.requestExact(), child: const Text('السماح')),
+      ]),
+    );
   }
 }
