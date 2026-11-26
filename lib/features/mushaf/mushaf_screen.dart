@@ -102,8 +102,9 @@ class _MushafScreenState extends State<MushafScreen> {
     setState(() {
       _page = i + 1;
       _revealed.clear();
-      if (_selected == null) _chrome = false;
       if (_selected != null && Quran.pageOf(_selected!) != _page && _playing == null) _selected = null;
+      // تقليب الصفحة بيخفي الأدوات عشان الصفحة تبان كاملة
+      if (_selected == null) _chrome = false;
     });
     _store.savePosition(_page);
     MushafPack.warmAround(_page);

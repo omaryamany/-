@@ -1,7 +1,7 @@
 name: murattil
 description: مُرتِّل — مصحف المدينة وختمة يومية. مجاني لوجه الله، من غير إعلانات، ويشتغل من غير نت.
 publish_to: "none"
-version: 1.3.0+4
+version: 1.4.0+5
 
 environment:
   sdk: ">=3.6.0 <4.0.0"
