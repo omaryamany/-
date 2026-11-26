@@ -58,6 +58,10 @@ adb shell input swipe 200 1200 900 1200 300; sleep 6; shot 06_mushaf_next
 adb shell input keyevent KEYCODE_BACK; sleep 3
 tap_text "الأذكار"; sleep 2; shot 07_adhkar
 tap_text "أذكار الصباح"; sleep 3; shot 08_adhkar_morning
+adb shell input tap 540 1000; sleep 3; shot 08b_adhkar_next
+adb shell input keyevent KEYCODE_BACK; sleep 2
+tap_text "المسبحة"; sleep 3
+for _ in 1 2 3 4 5 6 7; do adb shell input tap 540 1150; done; sleep 1; shot 08c_tasbih
 adb shell input keyevent KEYCODE_BACK; sleep 2
 tap_text "الصلاة"; shot 09_prayer
 tap_text "المزيد"; shot 10_more
@@ -67,6 +71,22 @@ tap_text "الاستماع"; sleep 3; shot 11_listen
 tap_text "سورة الفاتحة"; sleep 10; shot 12_playing
 adhb_tap() { :; }; adb shell input tap 825 2238
 sleep 4; shot 13_now_playing
+
+adb shell input keyevent KEYCODE_BACK; sleep 2
+
+# موبايل صغير (٣٦٠×٦٤٠) وخط النظام كبير: التنسيق لازم يفضل سليم
+adb shell wm size 720x1280
+adb shell wm density 320
+adb shell settings put system font_scale 1.3
+adb shell am force-stop $PKG; sleep 2
+adb shell monkey -p $PKG -c android.intent.category.LAUNCHER 1; sleep 20
+shot 20_small_home
+tap_text "المصحف"; tap_text "سورة البقرة"; sleep 8; shot 21_small_mushaf
+adb shell input tap 360 640; sleep 2; shot 22_small_mushaf_clean
+adb shell input keyevent KEYCODE_BACK; sleep 2
+tap_text "الأذكار"; sleep 2; shot 23_small_adhkar
+tap_text "المسبحة"; sleep 3; shot 24_small_tasbih
+adb shell wm size reset; adb shell wm density reset; adb shell settings put system font_scale 1.0
 
 adb logcat -d > "$OUT/logcat.txt"
 grep -E "flutter|FATAL|AndroidRuntime" "$OUT/logcat.txt" | grep -iE "error|exception|fatal|overflow" | head -200 > "$OUT/errors.txt"

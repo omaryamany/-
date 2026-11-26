@@ -120,7 +120,8 @@ class _ShellState extends State<Shell> {
   }
 }
 
-/// شريط التنقل السفلي العائم (تصميم «مُرتِّل»): كبسولة بأيقونات، والمختار بيتمدّ ويظهر اسمه
+/// شريط التنقل السفلي العائم (تصميم «مُرتِّل»): كبسولة فيها كل أيقونة وتحتها اسمها،
+/// والمختار بيظهر حوالين أيقونته كبسولة فيروزي
 class MurattilNavBar extends StatelessWidget {
   final int index;
   final ValueChanged<int> onTap;
@@ -133,50 +134,56 @@ class MurattilNavBar extends StatelessWidget {
     return SafeArea(
       top: false,
       child: Container(
-        margin: const EdgeInsets.fromLTRB(12, 0, 12, 10),
-        padding: const EdgeInsets.all(6),
+        margin: const EdgeInsets.fromLTRB(10, 0, 10, 8),
+        padding: const EdgeInsets.fromLTRB(4, 7, 4, 6),
         decoration: BoxDecoration(
           color: dark ? AppColors.nightCard : AppColors.pineDeep,
-          borderRadius: BorderRadius.circular(30),
+          borderRadius: BorderRadius.circular(26),
           boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: .22), blurRadius: 20, offset: const Offset(0, 8))],
         ),
-        child: Row(children: [
-          for (var i = 0; i < items.length; i++)
-            Expanded(
-              flex: i == index ? 5 : 3,
-              child: Semantics(
-                label: items[i].$3,
-                button: true,
-                selected: i == index,
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: () => onTap(i),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 260),
-                    curve: Curves.easeOutCubic,
-                    height: 52,
-                    decoration: BoxDecoration(
-                      color: i == index ? AppColors.turquoise : Colors.transparent,
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                    child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                      Icon(i == index ? items[i].$2 : items[i].$1, color: i == index ? Colors.white : Colors.white70, size: 24),
-                      if (i == index) ...[
-                        const SizedBox(width: 6),
-                        Flexible(
-                          child: Text(items[i].$3,
-                              maxLines: 1,
-                              overflow: TextOverflow.fade,
-                              softWrap: false,
-                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 13)),
+        child: MediaQuery.withClampedTextScaling(
+          maxScaleFactor: 1.0,
+          child: Row(children: [
+            for (var i = 0; i < items.length; i++)
+              Expanded(
+                child: Semantics(
+                  label: items[i].$3,
+                  button: true,
+                  selected: i == index,
+                  excludeSemantics: true,
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () => onTap(i),
+                    child: Column(mainAxisSize: MainAxisSize.min, children: [
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 240),
+                        curve: Curves.easeOutCubic,
+                        width: i == index ? 54 : 40,
+                        height: 30,
+                        decoration: BoxDecoration(
+                          color: i == index ? AppColors.turquoise : Colors.transparent,
+                          borderRadius: BorderRadius.circular(16),
                         ),
-                      ],
+                        child: Icon(i == index ? items[i].$2 : items[i].$1, color: i == index ? Colors.white : Colors.white70, size: 22),
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        items[i].$3,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: i == index ? Colors.white : Colors.white70,
+                          fontWeight: i == index ? FontWeight.w700 : FontWeight.w500,
+                          fontSize: 11.5,
+                          height: 1.25,
+                        ),
+                      ),
                     ]),
                   ),
                 ),
               ),
-            ),
-        ]),
+          ]),
+        ),
       ),
     );
   }

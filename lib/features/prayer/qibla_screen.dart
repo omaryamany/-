@@ -165,7 +165,7 @@ class _DialPainter extends CustomPainter {
     for (final e in labels.entries) {
       final rad = (e.key - 90) * math.pi / 180;
       final tp = TextPainter(
-        text: TextSpan(text: e.value, style: TextStyle(fontFamily: 'Almarai', fontSize: 18, fontWeight: FontWeight.w700, color: e.key == 0 ? AppColors.rose : cs.onSurface)),
+        text: TextSpan(text: e.value, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: e.key == 0 ? AppColors.rose : cs.onSurface)),
         textDirection: TextDirection.rtl,
       )..layout();
       final pos = c + Offset(math.cos(rad), math.sin(rad)) * (r - 36);

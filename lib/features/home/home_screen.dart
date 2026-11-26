@@ -16,6 +16,7 @@ import '../listen/listen_screen.dart';
 import '../mushaf/sheets.dart';
 import '../prayer/prayer_screen.dart';
 import '../shell.dart';
+import '../tasbih/tasbih_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   final ValueChanged<int> onTab;
@@ -142,10 +143,10 @@ class HomeScreen extends StatelessWidget {
             _WeekChart(values: store.lastWeek).enter(i++),
 
             // ───── وصول سريع ─────
-            const SectionTitle('تصفّح المصحف').enter(i++),
+            const SectionTitle('وصول سريع').enter(i++),
             Row(children: [
               Expanded(child: _Quick(icon: Icons.format_list_bulleted_rounded, label: 'السور', onTap: () => onTab(1))),
-              const SizedBox(width: 10),
+              const SizedBox(width: 8),
               Expanded(
                 child: _Quick(
                   icon: Icons.bookmarks_rounded,
@@ -154,8 +155,10 @@ class HomeScreen extends StatelessWidget {
                   onTap: () => showIndexSheet(context, onPick: (g) => openMushaf(context, ayah: g)),
                 ),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 8),
               Expanded(child: _Quick(icon: Icons.headphones_rounded, label: 'الاستماع', onTap: () => openListen(context))),
+              const SizedBox(width: 8),
+              Expanded(child: _Quick(icon: Icons.blur_circular_rounded, label: 'المسبحة', onTap: () => openTasbih(context))),
             ]).enter(i++),
           ]),
         );

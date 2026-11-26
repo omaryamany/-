@@ -48,7 +48,7 @@ class AppColors {
 }
 
 class AppTheme {
-  static const font = 'Plex';
+  static const font = 'NotoSansArabic';
 
   static ThemeData light() {
     final scheme = ColorScheme.fromSeed(
@@ -159,12 +159,22 @@ class AppTheme {
 /// ألوان صفحة المصحف
 class MushafPalette {
   final Color bg, paper, ink, frame, accent, number;
-  final bool dark;
-  const MushafPalette(this.bg, this.paper, this.ink, this.frame, this.accent, this.number, {this.dark = false});
 
-  static const light = MushafPalette(Color(0xFFEFE7D4), Color(0xFFFCF8EE), Color(0xFF221C12), AppColors.gold, AppColors.pineDeep, Color(0xFFA9842F));
-  static const sepia = MushafPalette(Color(0xFFE6D8BA), Color(0xFFF5E9CF), Color(0xFF3A2B16), Color(0xFFB08A3E), Color(0xFF7A5A1E), Color(0xFF8C6A2A));
-  static const night = MushafPalette(Color(0xFF070D0B), Color(0xFF101916), Color(0xFFE6DFCC), Color(0xFF8D7A45), AppColors.goldLight, AppColors.gold, dark: true);
+  /// لون شريط عنوان السورة (المزخرف) وخلفية الخرطوشة اللي فيها الاسم
+  final Color banner, bannerInk;
+  final bool dark;
+  const MushafPalette(this.bg, this.paper, this.ink, this.frame, this.accent, this.number,
+      {this.banner = const Color(0xFF3F9A6E), this.bannerInk = const Color(0xFFDCEFE2), this.dark = false});
+
+  /// ورقة كريمي فاتح وحبر أسود وأرقام الآيات بالأخضر — زي المصحف المطبوع
+  static const light = MushafPalette(Color(0xFFFDF8EC), Color(0xFFFDF8EC), Color(0xFF1B1A17), Color(0xFF2F4A6B), AppColors.pineDeep,
+      Color(0xFF2E7D57));
+  static const sepia = MushafPalette(Color(0xFFF5E9CF), Color(0xFFF5E9CF), Color(0xFF3A2B16), Color(0xFF8C6A2A), Color(0xFF7A5A1E),
+      Color(0xFF8C6A2A),
+      banner: Color(0xFFB08A3E), bannerInk: Color(0xFFF3E3BE));
+  static const night = MushafPalette(Color(0xFF0E1412), Color(0xFF0E1412), Color(0xFFE8E2D2), Color(0xFF55657A), AppColors.goldLight,
+      Color(0xFF6FC39A),
+      banner: Color(0xFF2A6B4E), bannerInk: Color(0xFF16251E), dark: true);
 
   static MushafPalette of(String key, Brightness appBrightness) => switch (key) {
         'paper' => light,

@@ -5,6 +5,7 @@ import '../../core/arabic.dart';
 import '../../core/theme.dart';
 import '../../core/ui.dart';
 import 'adhkar_screen.dart';
+import '../tasbih/tasbih_screen.dart';
 
 /// ألوان وأيقونة كل قسم أذكار
 class _Look {
@@ -56,6 +57,27 @@ class _AdhkarHomeState extends State<AdhkarHome> {
               Text('﴿أَلَا بِذِكْرِ ٱللَّهِ تَطْمَئِنُّ ٱلْقُلُوبُ﴾', style: AppTheme.quran(size: 18, height: 1.8, color: AppColors.turquoise)),
               const SizedBox(height: 12),
               _Suggested(kind: suggested, onTap: () => _open(suggested)),
+              const SizedBox(height: 12),
+              SoftCard(
+                onTap: () => openTasbih(context),
+                padding: const EdgeInsets.fromLTRB(16, 12, 12, 12),
+                child: Row(children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: const BoxDecoration(shape: BoxShape.circle, gradient: AppColors.tealGradient),
+                    child: const Icon(Icons.blur_circular_rounded, color: Colors.white, size: 26),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      Text('المسبحة', style: t.titleMedium?.copyWith(fontWeight: FontWeight.w800)),
+                      Text('سبحان الله، الحمد لله، الاستغفار… وكل التسبيحات', maxLines: 1, overflow: TextOverflow.ellipsis, style: t.bodySmall),
+                    ]),
+                  ),
+                  const Icon(Icons.chevron_left_rounded),
+                ]),
+              ),
             ]),
           ),
         ),

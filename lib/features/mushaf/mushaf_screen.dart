@@ -102,6 +102,7 @@ class _MushafScreenState extends State<MushafScreen> {
     setState(() {
       _page = i + 1;
       _revealed.clear();
+      if (_selected == null) _chrome = false;
       if (_selected != null && Quran.pageOf(_selected!) != _page && _playing == null) _selected = null;
     });
     _store.savePosition(_page);
@@ -110,8 +111,13 @@ class _MushafScreenState extends State<MushafScreen> {
   }
 
   void _toggleChrome() {
-    setState(() => _chrome = !_chrome);
-    SystemChrome.setEnabledSystemUIMode(_chrome ? SystemUiMode.edgeToEdge : SystemUiMode.immersiveSticky);
+    setState(() {
+      if (_selected != null) {
+        _selected = null;
+      } else {
+        _chrome = !_chrome;
+      }
+    });
   }
 
   void _select(int g) {
@@ -119,10 +125,6 @@ class _MushafScreenState extends State<MushafScreen> {
     setState(() {
       _selected = _selected == g ? null : g;
       if (_hifz) _revealed.add(g);
-      if (_selected != null && !_chrome) {
-        _chrome = true;
-        SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-      }
     });
     if (_selected != null) _store.savePosition(_page, ayah: g);
   }
@@ -196,25 +198,18 @@ class _MushafScreenState extends State<MushafScreen> {
       onBlank: _toggleChrome,
     );
 
+    // الصفحة ثابتة المقاس دايمًا، والأدوات بتظهر فوقها (مش بتزقّها) — عشان التنسيق مايتغيّرش مع كل ضغطة
+    final bottomBar = _selected != null ? _ayahBar(pal, _selected!) : (_chrome ? _slider(pal) : null);
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: pal.dark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
+      value: (pal.dark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark).copyWith(
+        statusBarColor: Colors.transparent,
+        systemNavigationBarColor: pal.paper,
+      ),
       child: Scaffold(
-        backgroundColor: pal.bg,
-        body: SafeArea(
-          bottom: false,
-          child: Column(children: [
-            AnimatedSize(
-              duration: const Duration(milliseconds: 220),
-              curve: Curves.easeOut,
-              child: _chrome ? _topBar(pal) : const SizedBox(width: double.infinity),
-            ),
-            if (widget.wird && _khatma.active && _chrome) _wirdBar(pal),
-            if (_hifz && _chrome)
-              Padding(
-                padding: const EdgeInsets.only(top: 2),
-                child: Pill('وضع الحفظ: اضغط على الآية لتظهر', color: pal.accent, icon: Icons.visibility_off_rounded),
-              ),
-            Expanded(
+        backgroundColor: pal.paper,
+        body: Stack(children: [
+          Positioned.fill(
+            child: SafeArea(
               child: PageView.builder(
                 controller: _pc,
                 itemCount: Quran.totalPages,
@@ -222,15 +217,48 @@ class _MushafScreenState extends State<MushafScreen> {
                 itemBuilder: (_, i) => MushafPage(page: i + 1, s: state),
               ),
             ),
-            AnimatedSize(
-              duration: const Duration(milliseconds: 220),
-              curve: Curves.easeOut,
-              child: !_chrome
-                  ? SizedBox(width: double.infinity, height: MediaQuery.paddingOf(context).bottom)
-                  : (_selected != null ? _ayahBar(pal, _selected!) : _slider(pal)),
+          ),
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: IgnorePointer(
+              ignoring: !_chrome,
+              child: AnimatedSlide(
+                offset: _chrome ? Offset.zero : const Offset(0, -1),
+                duration: const Duration(milliseconds: 220),
+                curve: Curves.easeOut,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: pal.paper.withValues(alpha: .97),
+                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: pal.dark ? .4 : .10), blurRadius: 12, offset: const Offset(0, 3))],
+                  ),
+                  child: SafeArea(
+                    bottom: false,
+                    child: Column(mainAxisSize: MainAxisSize.min, children: [
+                      _topBar(pal),
+                      if (widget.wird && _khatma.active) _wirdBar(pal),
+                      if (_hifz)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 6),
+                          child: Pill('وضع الحفظ: اضغط على الآية لتظهر', color: pal.accent, icon: Icons.visibility_off_rounded),
+                        ),
+                    ]),
+                  ),
+                ),
+              ),
             ),
-          ]),
-        ),
+          ),
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 200),
+              child: bottomBar ?? const SizedBox(key: ValueKey('none'), width: double.infinity),
+            ),
+          ),
+        ]),
       ),
     );
   }
@@ -330,8 +358,12 @@ class _MushafScreenState extends State<MushafScreen> {
   }
 
   Widget _slider(MushafPalette pal) {
-    return Padding(
+    return Container(
       key: const ValueKey('slider'),
+      decoration: BoxDecoration(
+        color: pal.paper.withValues(alpha: .97),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: pal.dark ? .4 : .10), blurRadius: 12, offset: const Offset(0, -3))],
+      ),
       padding: EdgeInsets.fromLTRB(14, 0, 14, MediaQuery.paddingOf(context).bottom + 2),
       child: Row(children: [
         Text(arDigits(1), style: TextStyle(color: pal.ink, fontSize: 12)),

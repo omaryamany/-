@@ -332,7 +332,7 @@ class AboutScreen extends StatelessWidget {
             source('الأذكار', 'من كتاب «حصن المسلم»، والآيات من نص المصحف نفسه.'),
             source('مواقيت الصلاة', 'تُحسب فلكيًا على الهاتف (طريقة الهيئة المصرية العامة للمساحة افتراضيًا)، والأحزاب من بيانات Tanzil.'),
             source('التلاوات', 'من موقع EveryAyah.com، آية بآية.'),
-            source('الخطوط', 'خط أميري قرآن، وخط IBM Plex Sans Arabic (رخصة OFL).'),
+            source('الخطوط', 'خط أميري قرآن، وخط Noto Sans Arabic (رخصة OFL).'),
           ]),
         ),
         const SizedBox(height: 18),

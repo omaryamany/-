@@ -84,4 +84,4 @@ flutter run
 - خطوط ورسم مصحف المدينة: مجمع الملك فهد لطباعة المصحف الشريف (QCF V1)، والتخطيط من Quran.com.
 - النص العثماني (للبحث والنسخ): Tanzil.net — منقول بدون تعديل، وإشعار الحقوق في `assets/quran/TANZIL-COPYRIGHT.txt`.
 - التلاوات: EveryAyah.com.
-- الخطوط: Amiri Quran و IBM Plex Sans Arabic (رخصة OFL).
+- الخطوط: Amiri Quran و Noto Sans Arabic (رخصة OFL).

@@ -31,6 +31,8 @@ class MurattilApp extends StatelessWidget {
           GlobalWidgetsLocalizations.delegate,
           GlobalCupertinoLocalizations.delegate,
         ],
+        // حجم الخط من إعدادات الموبايل بيتطبّق، بس في حدود معقولة عشان التنسيق مايبوظش على أي جهاز
+        builder: (context, child) => MediaQuery.withClampedTextScaling(minScaleFactor: .85, maxScaleFactor: 1.15, child: child!),
         home: store.onboarded ? const Shell() : const OnboardingScreen(),
       ),
     );

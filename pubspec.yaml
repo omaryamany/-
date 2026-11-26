@@ -40,15 +40,17 @@ flutter:
     # خطوط صفحات مصحف المدينة (٦٠٤ خط) — بتتنزّل مرة واحدة بـ: node tool/fetch_mushaf_fonts.mjs
     - assets/qcf/
   fonts:
-    - family: Almarai
+    # خط الواجهة: Noto Sans Arabic (نفس شكل خط أندرويد/سامسونج العربي)
+    - family: NotoSansArabic
       fonts:
-        - asset: assets/fonts/Almarai-Light.ttf
-          weight: 300
-        - asset: assets/fonts/Almarai-Regular.ttf
-          weight: 400
-        - asset: assets/fonts/Almarai-Bold.ttf
+        - asset: assets/fonts/NotoSansArabic-Regular.ttf
+        - asset: assets/fonts/NotoSansArabic-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/NotoSansArabic-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/NotoSansArabic-Bold.ttf
           weight: 700
-        - asset: assets/fonts/Almarai-ExtraBold.ttf
+        - asset: assets/fonts/NotoSansArabic-ExtraBold.ttf
           weight: 800
     - family: AmiriQuran
       fonts:

@@ -40,7 +40,8 @@ class PageState {
   bool hidden(int g) => hifz && !revealed.contains(g) && playing != g;
 }
 
-/// صفحة مصحف كاملة: إطار مزخرف + ترويسة (السورة والجزء) + ١٥ سطر + رقم الصفحة
+/// صفحة مصحف كاملة على عرض الشاشة (من غير إطار): ترويسة خفيفة (السورة والجزء) + ١٥ سطر ممدودة + رقم الصفحة.
+/// حجم خط الموبايل (من إعدادات النظام) مالوش تأثير هنا — الصفحة بتتحسب على مقاس الشاشة نفسها.
 class MushafPage extends StatelessWidget {
   final int page;
   final PageState s;
@@ -49,32 +50,30 @@ class MushafPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final pal = s.pal;
-    final head = TextStyle(fontFamily: 'AmiriQuran', fontSize: 14, color: pal.number, height: 1.4);
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: s.onBlank,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
+    final head = TextStyle(fontSize: 12, color: pal.ink.withValues(alpha: .55), height: 1.3);
+    // الصفحات الفردية على اليمين (حافة الكتاب يمين)، والزوجية على الشمال — زي المصحف المطبوع
+    final edgeRight = page.isOdd;
+    return MediaQuery.withNoTextScaling(
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: s.onBlank,
         child: CustomPaint(
-          painter: _FramePainter(pal),
+          painter: _EdgePainter(pal, right: edgeRight),
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(12, 8, 12, 6),
+            padding: EdgeInsets.fromLTRB(edgeRight ? 8 : 14, 2, edgeRight ? 14 : 8, 2),
             child: Column(children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 6),
+              SizedBox(
+                height: 22,
                 child: Row(children: [
-                  Expanded(child: Text('سورة ${Quran.surahOfPage(page).name}', style: head)),
+                  Expanded(child: Text('سورة ${Quran.surahOfPage(page).name}', maxLines: 1, style: head)),
                   _hizbLabel(page, head),
-                  Expanded(child: Text('الجزء ${arDigits(Quran.juzOfPage(page))}', textAlign: TextAlign.end, style: head)),
+                  Expanded(child: Text('الجزء ${arDigits(Quran.juzOfPage(page))}', maxLines: 1, textAlign: TextAlign.end, style: head)),
                 ]),
               ),
-              Divider(height: 6, color: pal.frame.withValues(alpha: .35)),
               Expanded(child: _MadinahBody(page: page, s: s)),
-              const SizedBox(height: 4),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 0),
-                decoration: BoxDecoration(border: Border.all(color: pal.frame.withValues(alpha: .7)), borderRadius: BorderRadius.circular(99)),
-                child: Text(arDigits(page), style: TextStyle(color: pal.ink, fontWeight: FontWeight.w700, fontSize: 13)),
+              SizedBox(
+                height: 20,
+                child: Center(child: Text(arDigits(page), style: head.copyWith(fontSize: 12.5, fontWeight: FontWeight.w700))),
               ),
             ]),
           ),
@@ -90,8 +89,8 @@ Widget _hizbLabel(int page, TextStyle head) {
   final label = q != null ? Hizb.label(q) : 'الحزب ${arDigits(Hizb.quarterOf(Quran.pageRange(page).start) ~/ 4 + 1)}';
   final sajda = Hizb.pageHasSajda(page);
   return Row(mainAxisSize: MainAxisSize.min, children: [
-    if (q != null) Text('۞ ', style: head.copyWith(color: AppColors.gold)),
-    Text(label, style: q != null ? head.copyWith(color: AppColors.gold, fontWeight: FontWeight.w700) : head),
+    if (q != null) Text('۞ ', style: head.copyWith(color: AppColors.amber)),
+    Text(label, style: q != null ? head.copyWith(color: AppColors.amber, fontWeight: FontWeight.w700) : head),
     if (sajda) Text('  ۩ سجدة', style: head.copyWith(color: AppColors.rose)),
   ]);
 }
@@ -222,7 +221,7 @@ class _MadinahBodyState extends State<_MadinahBody> {
   }
 }
 
-/// عنوان السورة داخل إطار مزخرف
+/// عنوان السورة: شريط مزخرف بعرض السطر، وفي نصّه خرطوشة فيها اسم السورة
 class _SurahBanner extends StatelessWidget {
   final int surah;
   final MushafPalette pal;
@@ -232,24 +231,90 @@ class _SurahBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final s = Quran.surah(surah);
-    return Container(
-      height: fs * 1.6,
-      margin: EdgeInsets.symmetric(vertical: fs * .04),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(colors: [pal.frame.withValues(alpha: .10), pal.frame.withValues(alpha: .30), pal.frame.withValues(alpha: .10)]),
-        borderRadius: BorderRadius.circular(fs * .5),
-        border: Border.all(color: pal.frame.withValues(alpha: .85), width: 1.2),
-      ),
-      padding: EdgeInsets.symmetric(horizontal: fs * .5),
-      child: Row(children: [
-        Text(s.meccan ? 'مكية' : 'مدنية', style: TextStyle(fontSize: fs * .42, color: pal.number)),
-        Expanded(
-          child: Text('سورة ${s.name}', textAlign: TextAlign.center, style: AppTheme.quran(size: fs * .95, color: pal.accent, height: 1.2)),
+    return Semantics(
+      label: 'سورة ${s.name}',
+      child: SizedBox(
+        height: fs * 1.62,
+        child: CustomPaint(
+          painter: _BannerPainter(pal),
+          child: Center(
+            child: Padding(
+              padding: EdgeInsets.only(top: fs * .1),
+              child: Text('سورة ${s.name}', maxLines: 1, style: AppTheme.quran(size: fs * .78, color: pal.ink, height: 1.2)),
+            ),
+          ),
         ),
-        Text('آياتها ${arDigits(s.ayahCount)}', style: TextStyle(fontSize: fs * .42, color: pal.number)),
-      ]),
+      ),
     );
   }
+}
+
+class _BannerPainter extends CustomPainter {
+  final MushafPalette pal;
+  _BannerPainter(this.pal);
+
+  /// خرطوشة بطرفين مدبّبين (زي اللي في المصاحف)
+  Path _cartouche(double cx, double cy, double w, double h) {
+    final l = cx - w / 2, r = cx + w / 2, t = cy - h / 2, b = cy + h / 2;
+    final k = h * .75;
+    return Path()
+      ..moveTo(l, cy)
+      ..cubicTo(l + k * .15, t + h * .05, l + k * .55, t, l + k, t)
+      ..lineTo(r - k, t)
+      ..cubicTo(r - k * .55, t, r - k * .15, t + h * .05, r, cy)
+      ..cubicTo(r - k * .15, b - h * .05, r - k * .55, b, r - k, b)
+      ..lineTo(l + k, b)
+      ..cubicTo(l + k * .55, b, l + k * .15, b - h * .05, l, cy)
+      ..close();
+  }
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final outer = (Offset.zero & size).deflate(1);
+    final line = Paint()
+      ..style = PaintingStyle.stroke
+      ..color = pal.ink.withValues(alpha: .7)
+      ..strokeWidth = 1;
+    canvas.drawRect(outer, line);
+    final band = outer.deflate(3);
+    canvas.drawRect(band, Paint()..color = pal.banner);
+
+    // زخرفة الشريط: معيّنات متكرّرة بلون فاتح
+    canvas.save();
+    canvas.clipRect(band);
+    final deco = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1
+      ..color = pal.bannerInk.withValues(alpha: .55);
+    final h = band.height;
+    for (var x = band.left - h; x < band.right + h; x += h * .9) {
+      final c = Offset(x, band.center.dy);
+      canvas.drawPath(
+        Path()
+          ..moveTo(c.dx, band.top + h * .14)
+          ..lineTo(c.dx + h * .45, c.dy)
+          ..lineTo(c.dx, band.bottom - h * .14)
+          ..lineTo(c.dx - h * .45, c.dy)
+          ..close(),
+        deco,
+      );
+      canvas.drawCircle(c, h * .07, Paint()..color = pal.bannerInk.withValues(alpha: .7));
+    }
+    canvas.restore();
+
+    // الخرطوشة في النص
+    final cw = math.min(band.width * .46, band.height * 6.2);
+    final ch = band.height * .86;
+    final c = band.center;
+    canvas.drawPath(_cartouche(c.dx, c.dy, cw + 8, ch + 4), Paint()..color = pal.banner.withValues(alpha: 1));
+    canvas.drawPath(_cartouche(c.dx, c.dy, cw + 8, ch + 4), line..color = pal.bannerInk.withValues(alpha: .9));
+    canvas.drawPath(_cartouche(c.dx, c.dy, cw, ch), Paint()..color = pal.paper);
+    canvas.drawPath(_cartouche(c.dx, c.dy, cw, ch), line..color = pal.ink.withValues(alpha: .6));
+    canvas.drawRect(outer.deflate(2.2), line..color = pal.ink.withValues(alpha: .35)..strokeWidth = .6);
+  }
+
+  @override
+  bool shouldRepaint(covariant _BannerPainter o) => o.pal != pal;
 }
 
 /// عرض احتياطي بخط أميري (لو خطوط الصفحات مش موجودة في البناء)
@@ -321,33 +386,22 @@ class _PlainBodyState extends State<_PlainBody> {
   }
 }
 
-/// إطار الصفحة: خطين ذهبي + زخارف الأركان
-class _FramePainter extends CustomPainter {
+/// حافة الصفحة: خطوط رفيعة على الجنب الخارجي (زي حرف أوراق المصحف)
+class _EdgePainter extends CustomPainter {
   final MushafPalette pal;
-  _FramePainter(this.pal);
+  final bool right;
+  _EdgePainter(this.pal, {required this.right});
 
   @override
   void paint(Canvas canvas, Size s) {
-    final outer = RRect.fromRectAndRadius(Offset.zero & s, const Radius.circular(14));
-    canvas.drawRRect(outer, Paint()..color = pal.paper);
-    final gold = Paint()
-      ..color = pal.frame
-      ..style = PaintingStyle.stroke;
-    canvas.drawRRect(outer.deflate(1.5), gold..strokeWidth = 2);
-    canvas.drawRRect(outer.deflate(5.5), gold..strokeWidth = .8);
-    for (final c in [const Offset(13, 13), Offset(s.width - 13, 13), Offset(13, s.height - 13), Offset(s.width - 13, s.height - 13)]) {
-      final path = Path();
-      for (int i = 0; i < 8; i++) {
-        final a = i * math.pi / 4;
-        final rr = i.isEven ? 8.0 : 3.5;
-        final pt = c + Offset(math.cos(a) * rr, math.sin(a) * rr);
-        i == 0 ? path.moveTo(pt.dx, pt.dy) : path.lineTo(pt.dx, pt.dy);
-      }
-      path.close();
-      canvas.drawPath(path, Paint()..color = pal.frame.withValues(alpha: .85));
+    canvas.drawRect(Offset.zero & s, Paint()..color = pal.paper);
+    double x(double d) => right ? s.width - d : d;
+    canvas.drawLine(Offset(x(1.5), 0), Offset(x(1.5), s.height), Paint()..color = pal.frame..strokeWidth = 3);
+    for (final d in [5.0, 7.5, 9.5]) {
+      canvas.drawLine(Offset(x(d), 0), Offset(x(d), s.height), Paint()..color = pal.frame.withValues(alpha: .35)..strokeWidth = .8);
     }
   }
 
   @override
-  bool shouldRepaint(covariant _FramePainter o) => o.pal != pal;
+  bool shouldRepaint(covariant _EdgePainter o) => o.pal != pal || o.right != right;
 }
