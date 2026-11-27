@@ -204,9 +204,14 @@ class _Card extends StatelessWidget {
     const w = 360.0;
     final h = story ? 640.0 : 360.0;
     final st = style;
-    final body = content.quran ? '﴿ ${content.text} ﴾' : content.text;
+    // علامات الوقف (ۚ ۖ ۗ …) تفضل لازقة في الكلمة اللي قبلها، ماتنزلش لوحدها أول السطر
+    final clean = content.text.replaceAllMapped(RegExp(r' ([\u06D6-\u06DC])'), (m) => '\u00A0${m[1]}');
+    final body = content.quran ? '﴿\u00A0$clean\u00A0﴾' : clean;
+    final source = content.source.replaceAll(' · ', '، ');
     return MediaQuery.withNoTextScaling(
-      child: Directionality(
+      child: Material(
+        type: MaterialType.transparency,
+        child: Directionality(
         textDirection: TextDirection.rtl,
         child: Container(
           width: w,
@@ -243,17 +248,19 @@ class _Card extends StatelessWidget {
                     );
                   }),
                 ),
-                if (content.source.isNotEmpty) ...[
+                if (source.isNotEmpty) ...[
                   const SizedBox(height: 6),
-                  Text(content.source, textAlign: TextAlign.center, style: TextStyle(fontFamily: AppTheme.font, fontSize: story ? 14 : 12, fontWeight: FontWeight.w700, color: st.accent)),
+                  Text(source, textAlign: TextAlign.center, style: TextStyle(fontFamily: AppTheme.font, fontSize: story ? 14 : 12, fontWeight: FontWeight.w700, color: st.accent)),
                 ],
                 SizedBox(height: story ? 22 : 10),
                 Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                   Container(width: 18, height: 1, color: st.sub),
                   const SizedBox(width: 6),
                   Text('مُرتِّل', style: TextStyle(fontFamily: AppTheme.font, fontSize: 11, fontWeight: FontWeight.w800, color: st.sub)),
-                  const SizedBox(width: 4),
-                  Text('· مصحف وختمة وأذكار', style: TextStyle(fontFamily: AppTheme.font, fontSize: 9.5, color: st.sub)),
+                  const SizedBox(width: 5),
+                  Container(width: 3, height: 3, decoration: BoxDecoration(color: st.sub, shape: BoxShape.circle)),
+                  const SizedBox(width: 5),
+                  Text('مصحف وختمة وأذكار', style: TextStyle(fontFamily: AppTheme.font, fontSize: 9.5, color: st.sub)),
                   const SizedBox(width: 6),
                   Container(width: 18, height: 1, color: st.sub),
                 ]),
@@ -261,6 +268,7 @@ class _Card extends StatelessWidget {
             ),
           ]),
         ),
+      ),
       ),
     );
   }
