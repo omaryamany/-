@@ -9,6 +9,10 @@ adb wait-for-device
 adb shell settings put global window_animation_scale 0
 adb shell settings put global transition_animation_scale 0
 adb shell settings put global animator_duration_scale 0
+# إخفاء نوافذ «التطبيق لا يستجيب» بتاعة النظام (المحاكي أحيانًا بيبطّأ اللانشر)
+adb shell settings put global hide_error_dialogs 1
+sleep 20
+adb shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS
 adb install -r "$APK" || exit 1
 adb logcat -c
 adb shell monkey -p $PKG -c android.intent.category.LAUNCHER 1
@@ -77,6 +81,7 @@ adb shell input keyevent KEYCODE_BACK; sleep 2
 # مميزات ١٫٥: المزيد، الحفظ، الإذاعات، التقويم، رمضان، الزكاة، المكتبة
 adb shell am force-stop $PKG; sleep 2
 adb shell monkey -p $PKG -c android.intent.category.LAUNCHER 1; sleep 20
+tap_text "تخطي" && sleep 2 && tap_text "الرئيسية"
 tap_text "المزيد"; sleep 2; shot 40_more
 tap_text "الحفظ"; sleep 3; shot 41_hifz
 adb shell input keyevent KEYCODE_BACK; sleep 2
