@@ -133,6 +133,13 @@ adb root >/dev/null 2>&1; sleep 4; adb wait-for-device
 adb shell am broadcast -n $PKG/com.murattil.murattil.AdhanReceiver -a com.murattil.quran.ADHAN_ALARM --es sound adhan_egypt_refaat --es title "حان الآن موعد صلاة العصر" --es body test --ei volume 90
 sleep 6
 adb shell cmd statusbar expand-notifications; sleep 2; shot 30_adhan_notification
+adb shell cmd statusbar collapse; sleep 1
+# زرار الصوت لازم يوقف الأذان
+adb shell dumpsys media.audio_flinger | grep -cE " 4 +4 " > "$OUT/adhan_before_key.txt" 2>&1
+adb shell input keyevent KEYCODE_VOLUME_DOWN; sleep 3
+adb shell dumpsys media_session | grep -iE "murattil-adhan|active=" | head -10 > "$OUT/adhan_session.txt" 2>&1
+adb shell dumpsys activity services com.murattil.quran | grep -c AdhanService > "$OUT/adhan_service_after_key.txt" 2>&1
+adb shell cmd statusbar expand-notifications; sleep 2; shot 31_after_volume_key
 adb shell dumpsys audio > "$OUT/audio.txt" 2>&1
 adb shell dumpsys media.audio_flinger > "$OUT/flinger.txt" 2>&1
 adb shell cmd statusbar collapse

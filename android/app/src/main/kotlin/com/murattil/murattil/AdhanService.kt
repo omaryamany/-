@@ -12,6 +12,13 @@ import android.media.AudioAttributes
 import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.media.MediaPlayer
+import android.media.VolumeProvider
+import android.media.session.MediaSession
+import android.media.session.PlaybackState
+import android.content.BroadcastReceiver
+import android.content.IntentFilter
+import android.os.SystemClock
+import androidx.core.content.ContextCompat
 import android.net.Uri
 import android.os.Build
 import android.os.IBinder
@@ -96,6 +103,11 @@ class AdhanService : Service() {
     private var wake: PowerManager.WakeLock? = null
     private var focus: AudioFocusRequest? = null
 
+    // إيقاف الأذان بزرار الصوت (فوق أو تحت) — حتى والشاشة مقفولة
+    private var session: MediaSession? = null
+    private var volumeReceiver: BroadcastReceiver? = null
+    private var startedAt = 0L
+
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -112,6 +124,7 @@ class AdhanService : Service() {
             .setSmallIcon(R.drawable.ic_stat_murattil)
             .setContentTitle(title)
             .setContentText(body)
+            .setSubText("اضغط زرار الصوت لإيقاف الأذان")
             .setColor(0xFF1E3A6E.toInt())
             .setPriority(NotificationCompat.PRIORITY_MAX)
             .setCategory(NotificationCompat.CATEGORY_ALARM)
@@ -132,7 +145,80 @@ class AdhanService : Service() {
             return START_NOT_STICKY
         }
         play(sound, volume)
+        listenForVolumeKeys()
         return START_NOT_STICKY
+    }
+
+    /**
+     * زرار الصوت يوقف الأذان: جلسة وسائط بتستقبل زراير الصوت (بدل ما تغيّر مستوى الصوت)،
+     * ومعاها مراقبة لتغيّر الصوت كاحتياطي على الأجهزة اللي مابتبعتش الزراير للجلسة.
+     */
+    private fun listenForVolumeKeys() {
+        startedAt = SystemClock.elapsedRealtime()
+        try {
+            val s = MediaSession(this, "murattil-adhan")
+            s.setPlaybackToRemote(object : VolumeProvider(VolumeProvider.VOLUME_CONTROL_RELATIVE, 100, 100) {
+                override fun onAdjustVolume(direction: Int) {
+                    if (direction != 0) stopByUser()
+                }
+            })
+            s.setCallback(object : MediaSession.Callback() {
+                override fun onPause() = stopByUser()
+                override fun onStop() = stopByUser()
+                override fun onMediaButtonEvent(mediaButtonIntent: Intent): Boolean {
+                    stopByUser()
+                    return true
+                }
+            })
+            s.setPlaybackState(
+                PlaybackState.Builder()
+                    .setActions(PlaybackState.ACTION_STOP or PlaybackState.ACTION_PAUSE or PlaybackState.ACTION_PLAY_PAUSE)
+                    .setState(PlaybackState.STATE_PLAYING, 0, 1f)
+                    .build()
+            )
+            s.isActive = true
+            session = s
+        } catch (_: Exception) {
+        }
+        try {
+            val r = object : BroadcastReceiver() {
+                override fun onReceive(c: Context, i: Intent) {
+                    // أول ثانيتين بنتجاهل (التطبيق نفسه بيظبط مستوى صوت المنبّه في البداية)
+                    if (SystemClock.elapsedRealtime() - startedAt > 2000) stopByUser()
+                }
+            }
+            ContextCompat.registerReceiver(this, r, IntentFilter("android.media.VOLUME_CHANGED_ACTION"), ContextCompat.RECEIVER_EXPORTED)
+            volumeReceiver = r
+        } catch (_: Exception) {
+        }
+    }
+
+    private var stopping = false
+
+    /** المستخدم ضغط زرار الصوت: الأذان يقف، والإشعار يتشال */
+    private fun stopByUser() {
+        if (stopping) return
+        stopping = true
+        try {
+            if (Build.VERSION.SDK_INT >= 24) stopForeground(STOP_FOREGROUND_REMOVE) else stopForeground(true)
+        } catch (_: Exception) {
+        }
+        NotificationManagerCompat.from(this).cancel(NOTIF_ID)
+        stopSelf()
+    }
+
+    private fun releaseKeys() {
+        try {
+            session?.isActive = false
+            session?.release()
+        } catch (_: Exception) {
+        }
+        session = null
+        try {
+            volumeReceiver?.let { unregisterReceiver(it) }
+        } catch (_: Exception) {
+        }
+        volumeReceiver = null
     }
 
     private fun play(sound: String, volume: Int) {
@@ -180,6 +266,7 @@ class AdhanService : Service() {
 
     /** الأذان خلص: الإشعار يفضل (من غير زر)، والخدمة تقف */
     private fun finish() {
+        releaseKeys()
         try {
             if (Build.VERSION.SDK_INT >= 24) stopForeground(STOP_FOREGROUND_DETACH) else stopForeground(false)
         } catch (_: Exception) {
@@ -197,6 +284,7 @@ class AdhanService : Service() {
     }
 
     override fun onDestroy() {
+        releaseKeys()
         releasePlayer()
         val am = getSystemService(Context.AUDIO_SERVICE) as AudioManager
         if (savedVolume >= 0) {
