@@ -1,0 +1,9 @@
+  Media button session is com.murattil.quran/murattil-adhan (userId=0)
+  Sessions Stack - have 9 sessions:
+    murattil-adhan com.murattil.quran/murattil-adhan (userId=0)
+      ownerPid=4507, ownerUid=10192, userId=0
+      package=com.murattil.quran
+      launchIntent=null
+      mediaButtonReceiver=null
+      active=true
+      flags=0

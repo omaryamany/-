@@ -1,0 +1,40 @@
+11-27 10:32:24.045  6162  6162 D FlutterGeolocator: Creating service.
+11-27 10:32:24.046  6162  6162 D FlutterGeolocator: Binding to location service.
+11-27 10:32:24.097  6162  6162 I System.out: flutterEngine warmed up
+11-27 10:32:24.102  6162  6162 D FlutterGeolocator: Flutter engine connected. Connected engine count 1
+11-27 10:32:54.447  6336  6358 I flutter : [IMPORTANT:flutter/shell/platform/android/android_context_gl_impeller.cc(105)] Using the Impeller rendering backend (OpenGLES).
+11-27 10:32:54.597  6336  6336 D FlutterGeolocator: Creating service.
+11-27 10:32:54.597  6336  6336 D FlutterGeolocator: Binding to location service.
+11-27 10:32:54.631  6336  6336 I System.out: flutterEngine warmed up
+11-27 10:32:54.632  6336  6336 D FlutterGeolocator: Flutter engine connected. Connected engine count 1
+11-27 10:33:25.031  6505  6525 I flutter : [IMPORTANT:flutter/shell/platform/android/android_context_gl_impeller.cc(105)] Using the Impeller rendering backend (OpenGLES).
+11-27 10:33:25.080  6505  6505 D FlutterGeolocator: Creating service.
+11-27 10:33:25.082  6505  6505 D FlutterGeolocator: Binding to location service.
+11-27 10:33:25.114  6505  6505 I System.out: flutterEngine warmed up
+11-27 10:33:25.115  6505  6505 D FlutterGeolocator: Flutter engine connected. Connected engine count 1
+11-27 10:33:55.247  6650  6673 I flutter : [IMPORTANT:flutter/shell/platform/android/android_context_gl_impeller.cc(105)] Using the Impeller rendering backend (OpenGLES).
+11-27 10:33:55.403  6650  6650 D FlutterGeolocator: Creating service.
+11-27 10:33:55.404  6650  6650 D FlutterGeolocator: Binding to location service.
+11-27 10:33:55.438  6650  6650 I System.out: flutterEngine warmed up
+11-27 10:33:55.439  6650  6650 D FlutterGeolocator: Flutter engine connected. Connected engine count 1
+11-27 10:34:25.911  6823  6846 I flutter : [IMPORTANT:flutter/shell/platform/android/android_context_gl_impeller.cc(105)] Using the Impeller rendering backend (OpenGLES).
+11-27 10:34:26.070  6823  6823 D FlutterGeolocator: Creating service.
+11-27 10:34:26.071  6823  6823 D FlutterGeolocator: Binding to location service.
+11-27 10:34:26.111  6823  6823 I System.out: flutterEngine warmed up
+11-27 10:34:26.112  6823  6823 D FlutterGeolocator: Flutter engine connected. Connected engine count 1
+11-27 10:35:04.780  6995  7017 I flutter : [IMPORTANT:flutter/shell/platform/android/android_context_gl_impeller.cc(105)] Using the Impeller rendering backend (OpenGLES).
+11-27 10:35:04.907  6995  6995 D FlutterGeolocator: Creating service.
+11-27 10:35:04.909  6995  6995 D FlutterGeolocator: Binding to location service.
+11-27 10:35:04.950  6995  6995 I System.out: flutterEngine warmed up
+11-27 10:35:04.953  6995  6995 D FlutterGeolocator: Flutter engine connected. Connected engine count 1
+11-27 10:35:35.990  7135  7158 I flutter : [IMPORTANT:flutter/shell/platform/android/android_context_gl_impeller.cc(105)] Using the Impeller rendering backend (OpenGLES).
+11-27 10:35:36.148  7135  7135 D FlutterGeolocator: Creating service.
+11-27 10:35:36.149  7135  7135 D FlutterGeolocator: Binding to location service.
+11-27 10:35:36.178  7135  7135 I System.out: flutterEngine warmed up
+11-27 10:35:36.180  7135  7135 D FlutterGeolocator: Flutter engine connected. Connected engine count 1
+11-27 10:36:08.527  7302  7324 I flutter : [IMPORTANT:flutter/shell/platform/android/android_context_gl_impeller.cc(105)] Using the Impeller rendering backend (OpenGLES).
+11-27 10:36:08.761  7302  7302 D FlutterGeolocator: Creating service.
+11-27 10:36:08.761  7302  7302 D FlutterGeolocator: Binding to location service.
+11-27 10:36:08.806  7302  7302 I System.out: flutterEngine warmed up
+11-27 10:36:08.809  7302  7302 D FlutterGeolocator: Flutter engine connected. Connected engine count 1
+11-27 10:36:38.798  7302  7302 I ExoPlayerImpl: Init ae59e6b [AndroidXMedia3/1.4.1] [emu64xa, sdk_gphone64_x86_64, Google, 34]

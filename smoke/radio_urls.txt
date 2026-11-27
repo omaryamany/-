@@ -1,0 +1,25 @@
++ for u in https://stream.radiojar.com/8s5u5tpdtwzuv https://stream.radiojar.com/0tpy1h0kxtzuv https://qurango.net/radio/mahmoud_khalil_alhussary
++ echo '== https://stream.radiojar.com/8s5u5tpdtwzuv'
+== https://stream.radiojar.com/8s5u5tpdtwzuv
++ curl -sL --max-time 8 -o /dev/null -D - https://stream.radiojar.com/8s5u5tpdtwzuv
++ grep -iE '^(HTTP|location|content-type)'
+HTTP/2 302 
+location: http://n09.radiojar.com/8s5u5tpdtwzuv?rj-ttl=5&rj-tok=AAABohyY1icA88kQqCsDd9Il5w
+HTTP/1.1 200 OK
+content-type: audio/mpeg
++ for u in https://stream.radiojar.com/8s5u5tpdtwzuv https://stream.radiojar.com/0tpy1h0kxtzuv https://qurango.net/radio/mahmoud_khalil_alhussary
++ echo '== https://stream.radiojar.com/0tpy1h0kxtzuv'
+== https://stream.radiojar.com/0tpy1h0kxtzuv
++ curl -sL --max-time 8 -o /dev/null -D - https://stream.radiojar.com/0tpy1h0kxtzuv
++ grep -iE '^(HTTP|location|content-type)'
+HTTP/2 302 
+location: http://n01.radiojar.com/0tpy1h0kxtzuv?rj-ttl=5&rj-tok=AAABohyY9m0AG2o2IzN0mXsyRQ
+HTTP/1.1 200 OK
+content-type: audio/mpeg
++ for u in https://stream.radiojar.com/8s5u5tpdtwzuv https://stream.radiojar.com/0tpy1h0kxtzuv https://qurango.net/radio/mahmoud_khalil_alhussary
++ echo '== https://qurango.net/radio/mahmoud_khalil_alhussary'
+== https://qurango.net/radio/mahmoud_khalil_alhussary
++ curl -sL --max-time 8 -o /dev/null -D - https://qurango.net/radio/mahmoud_khalil_alhussary
++ grep -iE '^(HTTP|location|content-type)'
+HTTP/2 200 
+content-type: audio/mpeg

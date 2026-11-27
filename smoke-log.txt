@@ -1,0 +1,1070 @@
++ OUT=/home/runner/work/-/-/smoke
++ mkdir -p /home/runner/work/-/-/smoke
++ APK=build/app/outputs/flutter-apk/app-x86_64-release.apk
++ PKG=com.murattil.quran
++ adb wait-for-device
++ adb shell settings put global window_animation_scale 0
++ adb shell settings put global transition_animation_scale 0
++ adb shell settings put global animator_duration_scale 0
++ adb shell settings put global hide_error_dialogs 1
++ sleep 20
++ adb shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS
+Broadcasting: Intent { act=android.intent.action.CLOSE_SYSTEM_DIALOGS flg=0x400000 }
+Broadcast completed: result=0
++ adb install -r build/app/outputs/flutter-apk/app-x86_64-release.apk
+Performing Streamed Install
+Success
++ adb logcat -c
++ adb shell monkey -p com.murattil.quran -c android.intent.category.LAUNCHER 1
+  bash arg: -p
+  bash arg: com.murattil.quran
+  bash arg: -c
+  bash arg: android.intent.category.LAUNCHER
+  bash arg: 1
+args: [-p, com.murattil.quran, -c, android.intent.category.LAUNCHER, 1]
+ arg: "-p"
+ arg: "com.murattil.quran"
+ arg: "-c"
+ arg: "android.intent.category.LAUNCHER"
+ arg: "1"
+data="com.murattil.quran"
+data="android.intent.category.LAUNCHER"
+Events injected: 1
+## Network stats: elapsed time=210ms (0ms mobile, 0ms wifi, 210ms not connected)
++ sleep 35
++ shot 01_onboarding
++ adb exec-out screencap -p
++ tap_text تخطي
++ adb shell rm -f /sdcard/ui.xml
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ break
++ adb pull /sdcard/ui.xml /home/runner/work/-/-/smoke/ui.xml
++ local b
+++ python3 - /home/runner/work/-/-/smoke/ui.xml تخطي
++ b='84 191'
++ '[' -n '84 191' ']'
++ adb shell input tap 84 191
++ sleep 4
++ return 0
++ sleep 5
++ shot 02_home
++ adb exec-out screencap -p
++ adb shell pm grant com.murattil.quran android.permission.POST_NOTIFICATIONS
++ adb shell media volume --stream 4 --set 2
+/system/bin/sh: media: inaccessible or not found
++ true
++ adb root
++ sleep 4
++ adb wait-for-device
++ adb shell am broadcast -n com.murattil.quran/com.murattil.murattil.AdhanReceiver -a com.murattil.quran.ADHAN_ALARM --es sound adhan_egypt_refaat --es title 'حان الآن موعد صلاة العصر' --es body test --ei volume 90
+Broadcasting: Intent { act=com.murattil.quran.ADHAN_ALARM flg=0x400000 pkg=الآن cmp=com.murattil.quran/com.murattil.murattil.AdhanReceiver (has extras) }
+Broadcast completed: result=0
++ sleep 6
++ adb shell cmd statusbar expand-notifications
++ sleep 2
++ shot 30_adhan_notification
++ adb exec-out screencap -p
++ adb shell cmd statusbar collapse
++ sleep 1
++ adb shell dumpsys audio
++ grep -iE USAGE_ALARM
++ grep -iE 'state:started|started'
++ adb shell dumpsys media_session
++ grep -iE murattil-adhan -A6
++ adb shell input keyevent KEYCODE_VOLUME_DOWN
++ sleep 3
++ adb shell dumpsys media_session
++ grep -iE 'murattil-adhan|active='
++ head -10
++ adb shell dumpsys activity services com.murattil.quran
++ grep -c AdhanService
++ adb shell dumpsys audio
++ grep -iE USAGE_ALARM
++ grep -iE started
++ adb shell cmd statusbar expand-notifications
++ sleep 2
++ shot 31_after_volume_key
++ adb exec-out screencap -p
++ adb shell dumpsys audio
++ adb shell dumpsys media.audio_flinger
++ adb shell cmd statusbar collapse
++ adb shell am broadcast -n com.murattil.quran/com.murattil.murattil.AdhanReceiver -a com.murattil.quran.ADHAN_STOP
+Broadcasting: Intent { act=com.murattil.quran.ADHAN_STOP flg=0x400000 cmp=com.murattil.quran/com.murattil.murattil.AdhanReceiver }
+Broadcast completed: result=0
++ sleep 3
++ adb shell dumpsys audio
++ grep -iE STREAM_ALARM -A4
++ head -20
++ tap_text المزيد
++ adb shell rm -f /sdcard/ui.xml
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ break
++ adb pull /sdcard/ui.xml /home/runner/work/-/-/smoke/ui.xml
++ local b
+++ python3 - /home/runner/work/-/-/smoke/ui.xml المزيد
++ b='137 2238'
++ '[' -n '137 2238' ']'
++ adb shell input tap 137 2238
++ sleep 4
++ return 0
++ sleep 2
++ shot 40_more
++ adb exec-out screencap -p
++ open_more الحفظ
++ relaunch
++ adb shell am force-stop com.murattil.quran
++ sleep 1
++ adb shell monkey -p com.murattil.quran -c android.intent.category.LAUNCHER 1
+args: [-p, com.murattil.quran, -c, android.intent.category.LAUNCHER, 1]
+ arg: "-p"
+ arg: "com.murattil.quran"
+ arg: "-c"
+ arg: "android.intent.category.LAUNCHER"
+ arg: "1"
+data="com.murattil.quran"
+data="android.intent.category.LAUNCHER"
++ sleep 12
++ tap_text المزيد
++ adb shell rm -f /sdcard/ui.xml
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ break
++ adb pull /sdcard/ui.xml /home/runner/work/-/-/smoke/ui.xml
++ local b
+++ python3 - /home/runner/work/-/-/smoke/ui.xml المزيد
++ b='137 2238'
++ '[' -n '137 2238' ']'
++ adb shell input tap 137 2238
++ sleep 4
++ return 0
++ sleep 1
++ tap_text الحفظ
++ adb shell rm -f /sdcard/ui.xml
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ break
++ adb pull /sdcard/ui.xml /home/runner/work/-/-/smoke/ui.xml
++ local b
+++ python3 - /home/runner/work/-/-/smoke/ui.xml الحفظ
++ b='877 410'
++ '[' -n '877 410' ']'
++ adb shell input tap 877 410
++ sleep 4
++ return 0
++ sleep 3
++ shot 41_hifz
++ adb exec-out screencap -p
++ open_more 'التقويم الهجري'
++ relaunch
++ adb shell am force-stop com.murattil.quran
++ sleep 1
++ adb shell monkey -p com.murattil.quran -c android.intent.category.LAUNCHER 1
+args: [-p, com.murattil.quran, -c, android.intent.category.LAUNCHER, 1]
+ arg: "-p"
+ arg: "com.murattil.quran"
+ arg: "-c"
+ arg: "android.intent.category.LAUNCHER"
+ arg: "1"
+data="com.murattil.quran"
+data="android.intent.category.LAUNCHER"
++ sleep 12
++ tap_text المزيد
++ adb shell rm -f /sdcard/ui.xml
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ break
++ adb pull /sdcard/ui.xml /home/runner/work/-/-/smoke/ui.xml
++ local b
+++ python3 - /home/runner/work/-/-/smoke/ui.xml المزيد
++ b='137 2238'
++ '[' -n '137 2238' ']'
++ adb shell input tap 137 2238
++ sleep 4
++ return 0
++ sleep 1
++ tap_text 'التقويم الهجري'
++ adb shell rm -f /sdcard/ui.xml
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ break
++ adb pull /sdcard/ui.xml /home/runner/work/-/-/smoke/ui.xml
++ local b
+++ python3 - /home/runner/work/-/-/smoke/ui.xml 'التقويم الهجري'
++ b='877 732'
++ '[' -n '877 732' ']'
++ adb shell input tap 877 732
++ sleep 4
++ return 0
++ sleep 3
++ shot 45_calendar
++ adb exec-out screencap -p
++ open_more 'حاسبة الزكاة'
++ relaunch
++ adb shell am force-stop com.murattil.quran
++ sleep 1
++ adb shell monkey -p com.murattil.quran -c android.intent.category.LAUNCHER 1
+args: [-p, com.murattil.quran, -c, android.intent.category.LAUNCHER, 1]
+ arg: "-p"
+ arg: "com.murattil.quran"
+ arg: "-c"
+ arg: "android.intent.category.LAUNCHER"
+ arg: "1"
+data="com.murattil.quran"
+data="android.intent.category.LAUNCHER"
++ sleep 12
++ tap_text المزيد
++ adb shell rm -f /sdcard/ui.xml
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ break
++ adb pull /sdcard/ui.xml /home/runner/work/-/-/smoke/ui.xml
++ local b
+++ python3 - /home/runner/work/-/-/smoke/ui.xml المزيد
++ b='137 2238'
++ '[' -n '137 2238' ']'
++ adb shell input tap 137 2238
++ sleep 4
++ return 0
++ sleep 1
++ tap_text 'حاسبة الزكاة'
++ adb shell rm -f /sdcard/ui.xml
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ break
++ adb pull /sdcard/ui.xml /home/runner/work/-/-/smoke/ui.xml
++ local b
+++ python3 - /home/runner/work/-/-/smoke/ui.xml 'حاسبة الزكاة'
++ b='540 732'
++ '[' -n '540 732' ']'
++ adb shell input tap 540 732
++ sleep 4
++ return 0
++ sleep 3
++ shot 46_zakat
++ adb exec-out screencap -p
++ open_more 'الأسماء الحسنى'
++ relaunch
++ adb shell am force-stop com.murattil.quran
++ sleep 1
++ adb shell monkey -p com.murattil.quran -c android.intent.category.LAUNCHER 1
+args: [-p, com.murattil.quran, -c, android.intent.category.LAUNCHER, 1]
+ arg: "-p"
+ arg: "com.murattil.quran"
+ arg: "-c"
+ arg: "android.intent.category.LAUNCHER"
+ arg: "1"
+data="com.murattil.quran"
+data="android.intent.category.LAUNCHER"
++ sleep 12
++ tap_text المزيد
++ adb shell rm -f /sdcard/ui.xml
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ break
++ adb pull /sdcard/ui.xml /home/runner/work/-/-/smoke/ui.xml
++ local b
+++ python3 - /home/runner/work/-/-/smoke/ui.xml المزيد
++ b='137 2238'
++ '[' -n '137 2238' ']'
++ adb shell input tap 137 2238
++ sleep 4
++ return 0
++ sleep 1
++ tap_text 'الأسماء الحسنى'
++ adb shell rm -f /sdcard/ui.xml
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ break
++ adb pull /sdcard/ui.xml /home/runner/work/-/-/smoke/ui.xml
++ local b
+++ python3 - /home/runner/work/-/-/smoke/ui.xml 'الأسماء الحسنى'
++ b='877 1055'
++ '[' -n '877 1055' ']'
++ adb shell input tap 877 1055
++ sleep 4
++ return 0
++ sleep 3
++ shot 47_asma
++ adb exec-out screencap -p
++ open_more 'الأربعون النووية'
++ relaunch
++ adb shell am force-stop com.murattil.quran
++ sleep 1
++ adb shell monkey -p com.murattil.quran -c android.intent.category.LAUNCHER 1
+args: [-p, com.murattil.quran, -c, android.intent.category.LAUNCHER, 1]
+ arg: "-p"
+ arg: "com.murattil.quran"
+ arg: "-c"
+ arg: "android.intent.category.LAUNCHER"
+ arg: "1"
+data="com.murattil.quran"
+data="android.intent.category.LAUNCHER"
++ sleep 12
++ tap_text المزيد
++ adb shell rm -f /sdcard/ui.xml
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ break
++ adb pull /sdcard/ui.xml /home/runner/work/-/-/smoke/ui.xml
++ local b
+++ python3 - /home/runner/work/-/-/smoke/ui.xml المزيد
++ b='137 2238'
++ '[' -n '137 2238' ']'
++ adb shell input tap 137 2238
++ sleep 4
++ return 0
++ sleep 1
++ tap_text 'الأربعون النووية'
++ adb shell rm -f /sdcard/ui.xml
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ break
++ adb pull /sdcard/ui.xml /home/runner/work/-/-/smoke/ui.xml
++ local b
+++ python3 - /home/runner/work/-/-/smoke/ui.xml 'الأربعون النووية'
++ b='540 1055'
++ '[' -n '540 1055' ']'
++ adb shell input tap 540 1055
++ sleep 4
++ return 0
++ sleep 3
++ tap_text 'إنما الأعمال بالنيات'
++ adb shell rm -f /sdcard/ui.xml
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ break
++ adb pull /sdcard/ui.xml /home/runner/work/-/-/smoke/ui.xml
++ local b
+++ python3 - /home/runner/work/-/-/smoke/ui.xml 'إنما الأعمال بالنيات'
++ b='540 393'
++ '[' -n '540 393' ']'
++ adb shell input tap 540 393
++ sleep 4
++ return 0
++ sleep 2
++ shot 48_nawawi
++ adb exec-out screencap -p
++ open_more 'الرقية الشرعية' 4
++ relaunch
++ adb shell am force-stop com.murattil.quran
++ sleep 1
++ adb shell monkey -p com.murattil.quran -c android.intent.category.LAUNCHER 1
+args: [-p, com.murattil.quran, -c, android.intent.category.LAUNCHER, 1]
+ arg: "-p"
+ arg: "com.murattil.quran"
+ arg: "-c"
+ arg: "android.intent.category.LAUNCHER"
+ arg: "1"
+data="com.murattil.quran"
+data="android.intent.category.LAUNCHER"
++ sleep 12
++ tap_text المزيد
++ adb shell rm -f /sdcard/ui.xml
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ break
++ adb pull /sdcard/ui.xml /home/runner/work/-/-/smoke/ui.xml
++ local b
+++ python3 - /home/runner/work/-/-/smoke/ui.xml المزيد
++ b='137 2238'
++ '[' -n '137 2238' ']'
++ adb shell input tap 137 2238
++ sleep 4
++ return 0
++ sleep 1
++ tap_text 'الرقية الشرعية'
++ adb shell rm -f /sdcard/ui.xml
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ break
++ adb pull /sdcard/ui.xml /home/runner/work/-/-/smoke/ui.xml
++ local b
+++ python3 - /home/runner/work/-/-/smoke/ui.xml 'الرقية الشرعية'
++ b='202 1055'
++ '[' -n '202 1055' ']'
++ adb shell input tap 202 1055
++ sleep 4
++ return 0
++ sleep 4
++ shot 49_ruqyah
++ adb exec-out screencap -p
++ open_more رمضان
++ relaunch
++ adb shell am force-stop com.murattil.quran
++ sleep 1
++ adb shell monkey -p com.murattil.quran -c android.intent.category.LAUNCHER 1
+args: [-p, com.murattil.quran, -c, android.intent.category.LAUNCHER, 1]
+ arg: "-p"
+ arg: "com.murattil.quran"
+ arg: "-c"
+ arg: "android.intent.category.LAUNCHER"
+ arg: "1"
+data="com.murattil.quran"
+data="android.intent.category.LAUNCHER"
++ sleep 12
++ tap_text المزيد
++ adb shell rm -f /sdcard/ui.xml
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ break
++ adb pull /sdcard/ui.xml /home/runner/work/-/-/smoke/ui.xml
++ local b
+++ python3 - /home/runner/work/-/-/smoke/ui.xml المزيد
++ b='137 2238'
++ '[' -n '137 2238' ']'
++ adb shell input tap 137 2238
++ sleep 4
++ return 0
++ sleep 1
++ tap_text رمضان
++ adb shell rm -f /sdcard/ui.xml
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ break
++ adb pull /sdcard/ui.xml /home/runner/work/-/-/smoke/ui.xml
++ local b
+++ python3 - /home/runner/work/-/-/smoke/ui.xml رمضان
++ b='202 410'
++ '[' -n '202 410' ']'
++ adb shell input tap 202 410
++ sleep 4
++ return 0
++ sleep 3
++ shot 44_ramadan
++ adb exec-out screencap -p
++ adb shell input swipe 540 1800 540 500 400
++ sleep 1
++ shot 44b_ramadan_imsakiya
++ adb exec-out screencap -p
++ open_more الإذاعات
++ relaunch
++ adb shell am force-stop com.murattil.quran
++ sleep 1
++ adb shell monkey -p com.murattil.quran -c android.intent.category.LAUNCHER 1
+args: [-p, com.murattil.quran, -c, android.intent.category.LAUNCHER, 1]
+ arg: "-p"
+ arg: "com.murattil.quran"
+ arg: "-c"
+ arg: "android.intent.category.LAUNCHER"
+ arg: "1"
+data="com.murattil.quran"
+data="android.intent.category.LAUNCHER"
++ sleep 12
++ tap_text المزيد
++ adb shell rm -f /sdcard/ui.xml
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ break
++ adb pull /sdcard/ui.xml /home/runner/work/-/-/smoke/ui.xml
++ local b
+++ python3 - /home/runner/work/-/-/smoke/ui.xml المزيد
++ b='137 2238'
++ '[' -n '137 2238' ']'
++ adb shell input tap 137 2238
++ sleep 4
++ return 0
++ sleep 1
++ tap_text الإذاعات
++ adb shell rm -f /sdcard/ui.xml
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ break
++ adb pull /sdcard/ui.xml /home/runner/work/-/-/smoke/ui.xml
++ local b
+++ python3 - /home/runner/work/-/-/smoke/ui.xml الإذاعات
++ b='540 410'
++ '[' -n '540 410' ']'
++ adb shell input tap 540 410
++ sleep 4
++ return 0
++ sleep 3
++ shot 42_radio
++ adb exec-out screencap -p
++ tap_text 'إذاعة القرآن الكريم من القاهرة'
++ adb shell rm -f /sdcard/ui.xml
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ break
++ adb pull /sdcard/ui.xml /home/runner/work/-/-/smoke/ui.xml
++ local b
+++ python3 - /home/runner/work/-/-/smoke/ui.xml 'إذاعة القرآن الكريم من القاهرة'
++ b='540 739'
++ '[' -n '540 739' ']'
++ adb shell input tap 540 739
++ sleep 4
++ return 0
++ sleep 3
++ shot 43a_radio_connecting
++ adb exec-out screencap -p
++ sleep 10
++ shot 43_radio_playing
++ adb exec-out screencap -p
++ adb logcat -d
++ grep -iE 'radio|ExoPlayer|Cleartext|HttpDataSource|flutter'
++ tail -40
++ relaunch
++ adb shell am force-stop com.murattil.quran
++ sleep 1
++ adb shell monkey -p com.murattil.quran -c android.intent.category.LAUNCHER 1
+args: [-p, com.murattil.quran, -c, android.intent.category.LAUNCHER, 1]
+ arg: "-p"
+ arg: "com.murattil.quran"
+ arg: "-c"
+ arg: "android.intent.category.LAUNCHER"
+ arg: "1"
+data="com.murattil.quran"
+data="android.intent.category.LAUNCHER"
++ sleep 12
++ tap_text المصحف
++ adb shell rm -f /sdcard/ui.xml
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ break
++ adb pull /sdcard/ui.xml /home/runner/work/-/-/smoke/ui.xml
++ local b
+++ python3 - /home/runner/work/-/-/smoke/ui.xml المصحف
++ b='741 2238'
++ '[' -n '741 2238' ']'
++ adb shell input tap 741 2238
++ sleep 4
++ return 0
++ tap_text 'سورة البقرة'
++ adb shell rm -f /sdcard/ui.xml
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ break
++ adb pull /sdcard/ui.xml /home/runner/work/-/-/smoke/ui.xml
++ local b
+++ python3 - /home/runner/work/-/-/smoke/ui.xml 'سورة البقرة'
++ b='540 863'
++ '[' -n '540 863' ']'
++ adb shell input tap 540 863
++ sleep 4
++ return 0
++ sleep 6
++ adb shell input tap 540 1300
++ sleep 2
++ shot 50a_ayah_bar
++ adb exec-out screencap -p
++ tap_text تفسير
++ adb shell rm -f /sdcard/ui.xml
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ break
++ adb pull /sdcard/ui.xml /home/runner/work/-/-/smoke/ui.xml
++ local b
+++ python3 - /home/runner/work/-/-/smoke/ui.xml تفسير
++ b='787 2237'
++ '[' -n '787 2237' ']'
++ adb shell input tap 787 2237
++ sleep 4
++ return 0
++ sleep 3
++ shot 50_tafsir
++ adb exec-out screencap -p
++ tap_text السعدي
++ adb shell rm -f /sdcard/ui.xml
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ break
++ adb pull /sdcard/ui.xml /home/runner/work/-/-/smoke/ui.xml
++ local b
+++ python3 - /home/runner/work/-/-/smoke/ui.xml السعدي
++ b='540 1097'
++ '[' -n '540 1097' ']'
++ adb shell input tap 540 1097
++ sleep 4
++ return 0
++ sleep 3
++ shot 51_tafsir_saadi
++ adb exec-out screencap -p
++ tap_text 'ابن كثير'
++ adb shell rm -f /sdcard/ui.xml
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ break
++ adb pull /sdcard/ui.xml /home/runner/work/-/-/smoke/ui.xml
++ local b
+++ python3 - /home/runner/work/-/-/smoke/ui.xml 'ابن كثير'
++ b='356 1097'
++ '[' -n '356 1097' ']'
++ adb shell input tap 356 1097
++ sleep 4
++ return 0
++ sleep 10
++ shot 52_tafsir_ibnkathir
++ adb exec-out screencap -p
++ adb shell dumpsys appwidget
++ relaunch
++ adb shell am force-stop com.murattil.quran
++ sleep 1
++ adb shell monkey -p com.murattil.quran -c android.intent.category.LAUNCHER 1
+args: [-p, com.murattil.quran, -c, android.intent.category.LAUNCHER, 1]
+ arg: "-p"
+ arg: "com.murattil.quran"
+ arg: "-c"
+ arg: "android.intent.category.LAUNCHER"
+ arg: "1"
+data="com.murattil.quran"
+data="android.intent.category.LAUNCHER"
++ sleep 12
++ tap_text الرئيسية
++ adb shell rm -f /sdcard/ui.xml
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ break
++ adb pull /sdcard/ui.xml /home/runner/work/-/-/smoke/ui.xml
++ local b
+++ python3 - /home/runner/work/-/-/smoke/ui.xml الرئيسية
++ b='942 2238'
++ '[' -n '942 2238' ']'
++ adb shell input tap 942 2238
++ sleep 4
++ return 0
++ adb shell input swipe 540 2000 540 900 400
++ sleep 2
++ shot 03_home_scrolled
++ adb exec-out screencap -p
++ tap_text المصحف
++ adb shell rm -f /sdcard/ui.xml
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ break
++ adb pull /sdcard/ui.xml /home/runner/work/-/-/smoke/ui.xml
++ local b
+++ python3 - /home/runner/work/-/-/smoke/ui.xml المصحف
++ b='741 2238'
++ '[' -n '741 2238' ']'
++ adb shell input tap 741 2238
++ sleep 4
++ return 0
++ shot 04_index
++ adb exec-out screencap -p
++ tap_text 'سورة البقرة'
++ adb shell rm -f /sdcard/ui.xml
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ break
++ adb pull /sdcard/ui.xml /home/runner/work/-/-/smoke/ui.xml
++ local b
+++ python3 - /home/runner/work/-/-/smoke/ui.xml 'سورة البقرة'
++ b='540 863'
++ '[' -n '540 863' ']'
++ adb shell input tap 540 863
++ sleep 4
++ return 0
++ sleep 8
++ shot 05_mushaf
++ adb exec-out screencap -p
++ adb shell input swipe 200 1200 900 1200 300
++ sleep 6
++ shot 06_mushaf_next
++ adb exec-out screencap -p
++ adb shell input keyevent KEYCODE_BACK
++ sleep 3
++ tap_text الأذكار
++ adb shell rm -f /sdcard/ui.xml
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ break
++ adb pull /sdcard/ui.xml /home/runner/work/-/-/smoke/ui.xml
++ local b
+++ python3 - /home/runner/work/-/-/smoke/ui.xml الأذكار
++ b='540 2238'
++ '[' -n '540 2238' ']'
++ adb shell input tap 540 2238
++ sleep 4
++ return 0
++ sleep 2
++ shot 07_adhkar
++ adb exec-out screencap -p
++ tap_text 'أذكار الصباح'
++ adb shell rm -f /sdcard/ui.xml
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ break
++ adb pull /sdcard/ui.xml /home/runner/work/-/-/smoke/ui.xml
++ local b
+++ python3 - /home/runner/work/-/-/smoke/ui.xml 'أذكار الصباح'
++ b='540 484'
++ '[' -n '540 484' ']'
++ adb shell input tap 540 484
++ sleep 4
++ return 0
++ sleep 3
++ shot 08_adhkar_morning
++ adb exec-out screencap -p
++ adb shell input tap 540 1000
++ sleep 3
++ shot 08b_adhkar_next
++ adb exec-out screencap -p
++ adb shell input keyevent KEYCODE_BACK
++ sleep 2
++ tap_text المسبحة
++ adb shell rm -f /sdcard/ui.xml
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ break
++ adb pull /sdcard/ui.xml /home/runner/work/-/-/smoke/ui.xml
++ local b
+++ python3 - /home/runner/work/-/-/smoke/ui.xml المسبحة
++ b='540 729'
++ '[' -n '540 729' ']'
++ adb shell input tap 540 729
++ sleep 4
++ return 0
++ sleep 3
++ for _ in 1 2 3 4 5 6 7
++ adb shell input tap 540 1150
++ for _ in 1 2 3 4 5 6 7
++ adb shell input tap 540 1150
++ for _ in 1 2 3 4 5 6 7
++ adb shell input tap 540 1150
++ for _ in 1 2 3 4 5 6 7
++ adb shell input tap 540 1150
++ for _ in 1 2 3 4 5 6 7
++ adb shell input tap 540 1150
++ for _ in 1 2 3 4 5 6 7
++ adb shell input tap 540 1150
++ for _ in 1 2 3 4 5 6 7
++ adb shell input tap 540 1150
++ sleep 1
++ shot 08c_tasbih
++ adb exec-out screencap -p
++ adb shell input keyevent KEYCODE_BACK
++ sleep 2
++ tap_text الصلاة
++ adb shell rm -f /sdcard/ui.xml
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ break
++ adb pull /sdcard/ui.xml /home/runner/work/-/-/smoke/ui.xml
++ local b
+++ python3 - /home/runner/work/-/-/smoke/ui.xml الصلاة
++ b='338 2238'
++ '[' -n '338 2238' ']'
++ adb shell input tap 338 2238
++ sleep 4
++ return 0
++ shot 09_prayer
++ adb exec-out screencap -p
++ tap_text المزيد
++ adb shell rm -f /sdcard/ui.xml
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ break
++ adb pull /sdcard/ui.xml /home/runner/work/-/-/smoke/ui.xml
++ local b
+++ python3 - /home/runner/work/-/-/smoke/ui.xml المزيد
++ b='137 2238'
++ '[' -n '137 2238' ']'
++ adb shell input tap 137 2238
++ sleep 4
++ return 0
++ shot 10_more
++ adb exec-out screencap -p
++ tap_text الرئيسية
++ adb shell rm -f /sdcard/ui.xml
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ break
++ adb pull /sdcard/ui.xml /home/runner/work/-/-/smoke/ui.xml
++ local b
+++ python3 - /home/runner/work/-/-/smoke/ui.xml الرئيسية
++ b='942 2238'
++ '[' -n '942 2238' ']'
++ adb shell input tap 942 2238
++ sleep 4
++ return 0
++ sleep 2
++ adb shell input swipe 540 2000 540 700 400
++ sleep 2
++ tap_text الاستماع
++ adb shell rm -f /sdcard/ui.xml
+adb: device 'emulator-5554' not found
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ sleep 3
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ sleep 3
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ sleep 3
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ sleep 3
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ sleep 3
++ adb pull /sdcard/ui.xml /home/runner/work/-/-/smoke/ui.xml
++ :
++ local b
+++ python3 - /home/runner/work/-/-/smoke/ui.xml الاستماع
++ b=
++ '[' -n '' ']'
++ echo 'tap_text: '\''الاستماع'\'' not found'
+tap_text: 'الاستماع' not found
++ return 1
++ sleep 3
++ shot 11_listen
++ adb exec-out screencap -p
+error: device 'emulator-5554' not found
++ tap_text 'سورة الفاتحة'
++ adb shell rm -f /sdcard/ui.xml
+adb: device 'emulator-5554' not found
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ sleep 3
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ sleep 3
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ sleep 3
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ sleep 3
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ sleep 3
++ adb pull /sdcard/ui.xml /home/runner/work/-/-/smoke/ui.xml
++ :
++ local b
+++ python3 - /home/runner/work/-/-/smoke/ui.xml 'سورة الفاتحة'
++ b=
++ '[' -n '' ']'
++ echo 'tap_text: '\''سورة الفاتحة'\'' not found'
+tap_text: 'سورة الفاتحة' not found
++ return 1
++ sleep 10
++ shot 12_playing
++ adb exec-out screencap -p
+error: device 'emulator-5554' not found
++ adb shell input tap 825 2238
+adb: device 'emulator-5554' not found
++ sleep 4
++ shot 13_now_playing
++ adb exec-out screencap -p
+error: device 'emulator-5554' not found
++ adb shell input keyevent KEYCODE_BACK
+adb: device 'emulator-5554' not found
++ sleep 2
++ adb shell wm size 720x1280
+adb: device 'emulator-5554' not found
++ adb shell wm density 320
+adb: device 'emulator-5554' not found
++ adb shell settings put system font_scale 1.3
+adb: device 'emulator-5554' not found
++ adb shell am force-stop com.murattil.quran
+adb: device 'emulator-5554' not found
++ sleep 2
++ adb shell monkey -p com.murattil.quran -c android.intent.category.LAUNCHER 1
+adb: device 'emulator-5554' not found
++ sleep 20
++ shot 20_small_home
++ adb exec-out screencap -p
+error: device 'emulator-5554' not found
++ tap_text المصحف
++ adb shell rm -f /sdcard/ui.xml
+adb: device 'emulator-5554' not found
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ sleep 3
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ sleep 3
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ sleep 3
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ sleep 3
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ sleep 3
++ adb pull /sdcard/ui.xml /home/runner/work/-/-/smoke/ui.xml
++ :
++ local b
+++ python3 - /home/runner/work/-/-/smoke/ui.xml المصحف
++ b=
++ '[' -n '' ']'
++ echo 'tap_text: '\''المصحف'\'' not found'
+tap_text: 'المصحف' not found
++ return 1
++ tap_text 'سورة البقرة'
++ adb shell rm -f /sdcard/ui.xml
+adb: device 'emulator-5554' not found
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ sleep 3
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ sleep 3
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ sleep 3
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ sleep 3
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ sleep 3
++ adb pull /sdcard/ui.xml /home/runner/work/-/-/smoke/ui.xml
++ :
++ local b
+++ python3 - /home/runner/work/-/-/smoke/ui.xml 'سورة البقرة'
++ b=
++ '[' -n '' ']'
++ echo 'tap_text: '\''سورة البقرة'\'' not found'
+tap_text: 'سورة البقرة' not found
++ return 1
++ sleep 8
++ shot 21_small_mushaf
++ adb exec-out screencap -p
+error: device 'emulator-5554' not found
++ adb shell input tap 360 640
+adb: device 'emulator-5554' not found
++ sleep 2
++ shot 22_small_mushaf_clean
++ adb exec-out screencap -p
+error: device 'emulator-5554' not found
++ adb shell input keyevent KEYCODE_BACK
+adb: device 'emulator-5554' not found
++ sleep 2
++ tap_text الأذكار
++ adb shell rm -f /sdcard/ui.xml
+adb: device 'emulator-5554' not found
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ sleep 3
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ sleep 3
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ sleep 3
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ sleep 3
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ sleep 3
++ adb pull /sdcard/ui.xml /home/runner/work/-/-/smoke/ui.xml
++ :
++ local b
+++ python3 - /home/runner/work/-/-/smoke/ui.xml الأذكار
++ b=
++ '[' -n '' ']'
++ echo 'tap_text: '\''الأذكار'\'' not found'
+tap_text: 'الأذكار' not found
++ return 1
++ sleep 2
++ shot 23_small_adhkar
++ adb exec-out screencap -p
+error: device 'emulator-5554' not found
++ tap_text المسبحة
++ adb shell rm -f /sdcard/ui.xml
+adb: device 'emulator-5554' not found
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ sleep 3
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ sleep 3
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ sleep 3
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ sleep 3
++ for _ in 1 2 3 4 5
++ adb shell uiautomator dump --compressed /sdcard/ui.xml
++ grep -q 'dumped to'
++ sleep 3
++ adb pull /sdcard/ui.xml /home/runner/work/-/-/smoke/ui.xml
++ :
++ local b
+++ python3 - /home/runner/work/-/-/smoke/ui.xml المسبحة
++ b=
++ '[' -n '' ']'
++ echo 'tap_text: '\''المسبحة'\'' not found'
+tap_text: 'المسبحة' not found
++ return 1
++ sleep 3
++ shot 24_small_tasbih
++ adb exec-out screencap -p
+error: device 'emulator-5554' not found
++ adb shell wm size reset
+adb: device 'emulator-5554' not found
++ adb shell wm density reset
+adb: device 'emulator-5554' not found
++ adb shell settings put system font_scale 1.0
+adb: device 'emulator-5554' not found
++ adb logcat -d
+- waiting for device -
