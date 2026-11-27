@@ -74,8 +74,8 @@ open_more "الإذاعات"; shot 42_radio
 tap_text "إذاعة القرآن الكريم من القاهرة"; sleep 3; shot 43a_radio_connecting; sleep 10; shot 43_radio_playing
 adb logcat -d | grep -iE "radio|ExoPlayer|Cleartext|HttpDataSource|flutter" | tail -40 > "$OUT/radio_log.txt"
 # التفسير: الميسّر والسعدي وابن كثير (تحميل من النت)
-relaunch; tap_text "المصحف"; tap_text "سورة الفاتحة"; sleep 6
-adb shell input tap 540 900; sleep 2; tap_text "تفسير"; sleep 3; shot 50_tafsir
+relaunch; tap_text "المصحف"; tap_text "سورة البقرة"; sleep 6
+adb shell input tap 540 1300; sleep 2; shot 50a_ayah_bar; tap_text "تفسير"; sleep 3; shot 50_tafsir
 tap_text "السعدي"; sleep 3; shot 51_tafsir_saadi
 tap_text "ابن كثير"; sleep 10; shot 52_tafsir_ibnkathir
 adb shell dumpsys appwidget > "$OUT/appwidget.txt" 2>&1
