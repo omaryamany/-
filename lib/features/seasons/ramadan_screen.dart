@@ -14,6 +14,7 @@ import '../../core/seasonal.dart';
 import '../../core/theme.dart';
 import '../../core/ui.dart';
 import '../khatma/khatma_screen.dart';
+import '../mushaf/share_ayah.dart';
 
 void openRamadan(BuildContext context) => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const RamadanScreen()));
 
@@ -204,13 +205,22 @@ class _RamadanScreenState extends State<RamadanScreen> {
         const SizedBox(height: 14),
         // دعاء الإفطار
         SoftCard(
+          onTap: () => openShareCard(
+            context,
+            const ShareContent(
+              header: 'دعاء الإفطار',
+              text: 'ذَهَبَ الظَّمَأُ، وَابْتَلَّتِ الْعُرُوقُ، وَثَبَتَ الْأَجْرُ إِنْ شَاءَ اللَّهُ',
+              source: 'رواه أبو داود',
+              caption: 'دعاء الإفطار: ذَهَبَ الظَّمَأُ، وَابْتَلَّتِ الْعُرُوقُ، وَثَبَتَ الْأَجْرُ إِنْ شَاءَ اللَّهُ',
+            ),
+          ),
           padding: const EdgeInsets.all(16),
           child: Column(children: [
             Text('دعاء الإفطار', style: t.titleSmall?.copyWith(color: AppColors.turquoise, fontWeight: FontWeight.w800)),
             const SizedBox(height: 6),
             Text('ذَهَبَ الظَّمَأُ، وَابْتَلَّتِ الْعُرُوقُ، وَثَبَتَ الْأَجْرُ إِنْ شَاءَ اللَّهُ',
                 textAlign: TextAlign.center, style: AppTheme.quran(size: 21, height: 1.9, color: cs.onSurface)),
-            Text('رواه أبو داود', style: t.labelSmall?.copyWith(color: cs.onSurfaceVariant)),
+            Text('رواه أبو داود · اضغط للمشاركة كصورة', style: t.labelSmall?.copyWith(color: cs.onSurfaceVariant)),
           ]),
         ),
         const SizedBox(height: 14),

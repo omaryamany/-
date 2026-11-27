@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import '../../core/arabic.dart';
 import '../../core/theme.dart';
 import '../../core/ui.dart';
+import '../mushaf/share_ayah.dart';
 
 void openAsma(BuildContext context) => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const AsmaScreen()));
 void openNawawi(BuildContext context) => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const NawawiScreen()));
@@ -51,6 +52,16 @@ class AsmaScreen extends StatelessWidget {
               return Padding(
                 padding: const EdgeInsets.only(bottom: 8),
                 child: SoftCard(
+                  onTap: () => openShareCard(
+                    context,
+                    ShareContent(
+                      header: 'من أسماء الله الحسنى',
+                      title: x['name'] as String,
+                      text: x['meaning'] as String,
+                      source: '﴿وَلِلَّهِ ٱلْأَسْمَآءُ ٱلْحُسْنَىٰ فَٱدْعُوهُ بِهَا﴾',
+                      caption: '${x['name']}: ${x['meaning']}',
+                    ),
+                  ),
                   padding: const EdgeInsets.fromLTRB(12, 10, 14, 10),
                   child: Row(children: [
                     StarNumber(i),
@@ -61,6 +72,7 @@ class AsmaScreen extends StatelessWidget {
                         Text(x['meaning'] as String, style: t.bodyMedium?.copyWith(height: 1.6)),
                       ]),
                     ),
+                    Icon(Icons.ios_share_rounded, size: 18, color: cs.onSurfaceVariant),
                   ]),
                 ),
               );
@@ -151,6 +163,19 @@ class _HadithPagerState extends State<_HadithPager> {
       appBar: AppBar(
         title: Text('الحديث ${ordinalAr(_i + 1)}'),
         actions: [
+          IconButton(
+            tooltip: 'مشاركة صورة',
+            onPressed: () => openShareCard(
+              context,
+              ShareContent(
+                header: x['title'] as String,
+                text: x['text'] as String,
+                source: 'الأربعون النووية · الحديث ${ordinalAr(_i + 1)}',
+                caption: '${x['title']}\n\n${x['text']}\n\n(الأربعون النووية — ${arDigits(_i + 1)})',
+              ),
+            ),
+            icon: const Icon(Icons.ios_share_rounded),
+          ),
           IconButton(
             tooltip: 'نسخ',
             onPressed: () async {

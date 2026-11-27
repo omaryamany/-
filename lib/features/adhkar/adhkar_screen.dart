@@ -7,6 +7,7 @@ import '../../core/arabic.dart';
 import '../../core/quran.dart';
 import '../../core/theme.dart';
 import '../../core/ui.dart';
+import '../mushaf/share_ayah.dart';
 
 export '../../core/adhkar_data.dart' show AdhkarKind;
 
@@ -108,6 +109,26 @@ class _AdhkarScreenState extends State<AdhkarScreen> {
             child: Text(atEnd ? 'تمّت' : '${arDigits(_index + 1)} / ${arDigits(total)}',
                 style: t.titleSmall?.copyWith(color: cs.onSurfaceVariant, fontWeight: FontWeight.w700)),
           ),
+          if (!atEnd)
+            IconButton(
+              tooltip: 'مشاركة صورة',
+              onPressed: () {
+                final d = _items[_index];
+                final quran = d.quran.isNotEmpty;
+                final txt = d.text ?? _quranText[_index] ?? '';
+                final src = [if (d.note != null) d.note!, if (d.count > 1) countLabel(d.count, 'مرة', 'مرتين', 'مرات')].join(' · ');
+                openShareCard(
+                  context,
+                  ShareContent(
+                    header: quran ? 'قال الله تعالى' : adhkarTitle(widget.kind),
+                    text: txt,
+                    source: src,
+                    caption: '$txt${src.isEmpty ? '' : '\n($src)'}',
+                  ),
+                );
+              },
+              icon: const Icon(Icons.ios_share_rounded),
+            ),
           IconButton(
             tooltip: 'البدء من جديد',
             onPressed: () {

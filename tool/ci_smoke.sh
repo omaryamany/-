@@ -66,7 +66,10 @@ open_more "الحفظ"; shot 41_hifz
 open_more "التقويم الهجري"; shot 45_calendar
 open_more "حاسبة الزكاة"; shot 46_zakat
 open_more "الأسماء الحسنى"; shot 47_asma
+tap_text "الرحمن"; sleep 3; tap_text "ليلي"; sleep 1; shot 47b_share_asma
 open_more "الأربعون النووية"; tap_text "إنما الأعمال بالنيات"; sleep 2; shot 48_nawawi
+tap_text "مشاركة صورة"; sleep 3; shot 48b_share_hadith_square
+tap_text "حالة واتساب"; sleep 2; shot 48c_share_hadith_story
 open_more "الرقية الشرعية" 4; shot 49_ruqyah
 open_more "رمضان"; shot 44_ramadan
 adb shell input swipe 540 1800 540 500 400; sleep 1; shot 44b_ramadan_imsakiya
@@ -75,7 +78,10 @@ tap_text "إذاعة القرآن الكريم من القاهرة"; sleep 3; sh
 adb logcat -d | grep -iE "radio|ExoPlayer|Cleartext|HttpDataSource|flutter" | tail -40 > "$OUT/radio_log.txt"
 # التفسير: الميسّر والسعدي وابن كثير (تحميل من النت)
 relaunch; tap_text "المصحف"; tap_text "سورة البقرة"; sleep 6
-adb shell input tap 540 1300; sleep 2; shot 50a_ayah_bar; tap_text "تفسير"; sleep 3; shot 50_tafsir
+adb shell input tap 540 1300; sleep 2; shot 50a_ayah_bar; tap_text "صورة"; sleep 3; shot 50b_share_ayah
+tap_text "مصحف"; sleep 1; shot 50c_share_ayah_mushaf
+adb shell input keyevent KEYCODE_BACK; sleep 2
+adb shell input tap 540 1300; sleep 2; tap_text "تفسير"; sleep 3; shot 50_tafsir
 tap_text "السعدي"; sleep 3; shot 51_tafsir_saadi
 tap_text "ابن كثير"; sleep 10; shot 52_tafsir_ibnkathir
 adb shell dumpsys appwidget > "$OUT/appwidget.txt" 2>&1

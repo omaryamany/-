@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/arabic.dart';
 import '../../core/theme.dart';
 import '../../core/ui.dart';
+import '../mushaf/share_ayah.dart';
 
 void openTasbih(BuildContext context) {
   Navigator.of(context).push(MaterialPageRoute(builder: (_) => const TasbihScreen()));
@@ -252,6 +253,14 @@ class _TasbihScreenState extends State<TasbihScreen> {
       appBar: AppBar(
         title: const Text('المسبحة'),
         actions: [
+          IconButton(
+            tooltip: 'مشاركة صورة',
+            onPressed: () => openShareCard(
+              context,
+              ShareContent(header: 'سَبِّح', text: cur.text, source: cur.note ?? '', caption: cur.text),
+            ),
+            icon: const Icon(Icons.ios_share_rounded),
+          ),
           IconButton(tooltip: 'كل التسبيحات', onPressed: () => _showList(context), icon: const Icon(Icons.format_list_bulleted_rounded)),
           IconButton(tooltip: 'تصفير العدّاد', onPressed: _reset, icon: const Icon(Icons.restart_alt_rounded)),
         ],
