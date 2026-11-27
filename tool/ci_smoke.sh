@@ -66,7 +66,7 @@ open_more "الحفظ"; shot 41_hifz
 open_more "التقويم الهجري"; shot 45_calendar
 open_more "حاسبة الزكاة"; shot 46_zakat
 open_more "الأسماء الحسنى"; shot 47_asma
-tap_text "الرحمن"; sleep 3; tap_text "ليلي"; sleep 1; shot 47b_share_asma
+tap_text "الرحمن"; sleep 4; shot 47b_share_asma
 open_more "الأربعون النووية"; tap_text "إنما الأعمال بالنيات"; sleep 2; shot 48_nawawi
 tap_text "مشاركة صورة"; sleep 3; shot 48b_share_hadith_square
 tap_text "حالة واتساب"; sleep 2; shot 48c_share_hadith_story

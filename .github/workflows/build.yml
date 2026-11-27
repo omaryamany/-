@@ -118,7 +118,7 @@ jobs:
           target: google_apis
           profile: pixel_6
           disable-animations: true
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          emulator-options: -no-window -gpu swangle_indirect -memory 4096 -noaudio -no-boot-anim -camera-back none
           script: OUT=$GITHUB_WORKSPACE/smoke bash tool/ci_smoke.sh build/app/outputs/flutter-apk/app-x86_64-release.apk > $GITHUB_WORKSPACE/smoke-log.txt 2>&1 || true
 
       - name: Save log to ci-log branch
