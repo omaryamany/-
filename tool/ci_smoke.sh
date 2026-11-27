@@ -54,6 +54,27 @@ shot 01_onboarding
 tap_text "تخطي" || adb shell input tap 100 150
 sleep 5
 shot 02_home
+# الأذان: تشغيل منبّه الأذان مباشرة والتأكد إن الصوت شغال على مسار المنبّه
+adb shell pm grant $PKG android.permission.POST_NOTIFICATIONS || true
+adb shell media volume --stream 4 --set 2 || true
+adb root >/dev/null 2>&1; sleep 4; adb wait-for-device
+adb shell am broadcast -n $PKG/com.murattil.murattil.AdhanReceiver -a com.murattil.quran.ADHAN_ALARM --es sound adhan_egypt_refaat --es title "حان الآن موعد صلاة العصر" --es body test --ei volume 90
+sleep 6
+adb shell cmd statusbar expand-notifications; sleep 2; shot 30_adhan_notification
+adb shell cmd statusbar collapse; sleep 1
+# زرار الصوت لازم يوقف الأذان
+adb shell dumpsys audio | grep -iE "USAGE_ALARM" | grep -iE "state:started|started" > "$OUT/adhan_before_key.txt" 2>&1
+adb shell dumpsys media_session | grep -iE "murattil-adhan" -A6 > "$OUT/adhan_session_before.txt" 2>&1
+adb shell input keyevent KEYCODE_VOLUME_DOWN; sleep 3
+adb shell dumpsys media_session | grep -iE "murattil-adhan|active=" | head -10 > "$OUT/adhan_session.txt" 2>&1
+adb shell dumpsys activity services com.murattil.quran | grep -c AdhanService > "$OUT/adhan_service_after_key.txt" 2>&1
+adb shell dumpsys audio | grep -iE "USAGE_ALARM" | grep -iE "started" > "$OUT/adhan_after_key.txt" 2>&1
+adb shell cmd statusbar expand-notifications; sleep 2; shot 31_after_volume_key
+adb shell dumpsys audio > "$OUT/audio.txt" 2>&1
+adb shell dumpsys media.audio_flinger > "$OUT/flinger.txt" 2>&1
+adb shell cmd statusbar collapse
+adb shell am broadcast -n $PKG/com.murattil.murattil.AdhanReceiver -a com.murattil.quran.ADHAN_STOP; sleep 3
+adb shell dumpsys audio | grep -iE "STREAM_ALARM" -A4 | head -20 > "$OUT/alarm_after.txt" 2>&1
 # روابط الإذاعات: سلسلة التحويل والنوع
 for u in https://stream.radiojar.com/8s5u5tpdtwzuv https://stream.radiojar.com/0tpy1h0kxtzuv https://qurango.net/radio/mahmoud_khalil_alhussary; do
   echo "== $u"; curl -sL --max-time 8 -o /dev/null -D - "$u" | grep -iE "^(HTTP|location|content-type)"
@@ -66,10 +87,7 @@ open_more "الحفظ"; shot 41_hifz
 open_more "التقويم الهجري"; shot 45_calendar
 open_more "حاسبة الزكاة"; shot 46_zakat
 open_more "الأسماء الحسنى"; shot 47_asma
-tap_text "الرحمن"; sleep 4; shot 47b_share_asma
 open_more "الأربعون النووية"; tap_text "إنما الأعمال بالنيات"; sleep 2; shot 48_nawawi
-tap_text "مشاركة صورة"; sleep 3; shot 48b_share_hadith_square
-tap_text "حالة واتساب"; sleep 2; shot 48c_share_hadith_story
 open_more "الرقية الشرعية" 4; shot 49_ruqyah
 open_more "رمضان"; shot 44_ramadan
 adb shell input swipe 540 1800 540 500 400; sleep 1; shot 44b_ramadan_imsakiya
@@ -78,10 +96,7 @@ tap_text "إذاعة القرآن الكريم من القاهرة"; sleep 3; sh
 adb logcat -d | grep -iE "radio|ExoPlayer|Cleartext|HttpDataSource|flutter" | tail -40 > "$OUT/radio_log.txt"
 # التفسير: الميسّر والسعدي وابن كثير (تحميل من النت)
 relaunch; tap_text "المصحف"; tap_text "سورة البقرة"; sleep 6
-adb shell input tap 540 1300; sleep 2; shot 50a_ayah_bar; tap_text "صورة"; sleep 3; shot 50b_share_ayah
-tap_text "مصحف"; sleep 1; shot 50c_share_ayah_mushaf
-adb shell input keyevent KEYCODE_BACK; sleep 2
-adb shell input tap 540 1300; sleep 2; tap_text "تفسير"; sleep 3; shot 50_tafsir
+adb shell input tap 540 1300; sleep 2; shot 50a_ayah_bar; tap_text "تفسير"; sleep 3; shot 50_tafsir
 tap_text "السعدي"; sleep 3; shot 51_tafsir_saadi
 tap_text "ابن كثير"; sleep 10; shot 52_tafsir_ibnkathir
 adb shell dumpsys appwidget > "$OUT/appwidget.txt" 2>&1
@@ -126,25 +141,6 @@ tap_text "الأذكار"; sleep 2; shot 23_small_adhkar
 tap_text "المسبحة"; sleep 3; shot 24_small_tasbih
 adb shell wm size reset; adb shell wm density reset; adb shell settings put system font_scale 1.0
 
-# الأذان: تشغيل منبّه الأذان مباشرة والتأكد إن الصوت شغال على مسار المنبّه
-adb shell pm grant $PKG android.permission.POST_NOTIFICATIONS || true
-adb shell media volume --stream 4 --set 2 || true
-adb root >/dev/null 2>&1; sleep 4; adb wait-for-device
-adb shell am broadcast -n $PKG/com.murattil.murattil.AdhanReceiver -a com.murattil.quran.ADHAN_ALARM --es sound adhan_egypt_refaat --es title "حان الآن موعد صلاة العصر" --es body test --ei volume 90
-sleep 6
-adb shell cmd statusbar expand-notifications; sleep 2; shot 30_adhan_notification
-adb shell cmd statusbar collapse; sleep 1
-# زرار الصوت لازم يوقف الأذان
-adb shell dumpsys media.audio_flinger | grep -cE " 4 +4 " > "$OUT/adhan_before_key.txt" 2>&1
-adb shell input keyevent KEYCODE_VOLUME_DOWN; sleep 3
-adb shell dumpsys media_session | grep -iE "murattil-adhan|active=" | head -10 > "$OUT/adhan_session.txt" 2>&1
-adb shell dumpsys activity services com.murattil.quran | grep -c AdhanService > "$OUT/adhan_service_after_key.txt" 2>&1
-adb shell cmd statusbar expand-notifications; sleep 2; shot 31_after_volume_key
-adb shell dumpsys audio > "$OUT/audio.txt" 2>&1
-adb shell dumpsys media.audio_flinger > "$OUT/flinger.txt" 2>&1
-adb shell cmd statusbar collapse
-adb shell am broadcast -n $PKG/com.murattil.murattil.AdhanReceiver -a com.murattil.quran.ADHAN_STOP; sleep 3
-adb shell dumpsys audio | grep -iE "STREAM_ALARM" -A4 | head -20 > "$OUT/alarm_after.txt" 2>&1
 
 adb logcat -d > "$OUT/logcat.txt"
 grep -E "flutter|FATAL|AndroidRuntime|AdhanService|murattil" "$OUT/logcat.txt" | grep -iE "error|exception|fatal|overflow" | head -200 > "$OUT/errors.txt"
