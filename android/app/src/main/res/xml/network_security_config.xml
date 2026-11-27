@@ -5,4 +5,8 @@
         <domain includeSubdomains="false">127.0.0.1</domain>
         <domain includeSubdomains="false">localhost</domain>
     </domain-config>
+    <!-- إذاعة القرآن من القاهرة والسعودية: البث بيتحوّل لسيرفرات radiojar على http -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">radiojar.com</domain>
+    </domain-config>
 </network-security-config>
