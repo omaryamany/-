@@ -181,6 +181,17 @@ class _ShareCardScreenState extends State<ShareCardScreen> {
   }
 }
 
+/// البطاقة للعرض من برّه الشاشة (اختبارات التصميم)
+class ShareCardView extends StatelessWidget {
+  final ShareContent content;
+  final int style;
+  final bool story;
+  const ShareCardView({super.key, required this.content, this.style = 0, this.story = false});
+  static int get styleCount => _styles.length;
+  @override
+  Widget build(BuildContext context) => _Card(content: content, style: _styles[style], story: story);
+}
+
 /// البطاقة نفسها: عرض ثابت ٣٦٠ (مربع ٣٦٠×٣٦٠ أو حالة ٣٦٠×٦٤٠)، والنص بيصغر لوحده لحد ما يدخل
 class _Card extends StatelessWidget {
   final ShareContent content;
