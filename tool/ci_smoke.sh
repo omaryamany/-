@@ -58,37 +58,28 @@ shot 02_home
 for u in https://stream.radiojar.com/8s5u5tpdtwzuv https://stream.radiojar.com/0tpy1h0kxtzuv https://qurango.net/radio/mahmoud_khalil_alhussary; do
   echo "== $u"; curl -sL --max-time 8 -o /dev/null -D - "$u" | grep -iE "^(HTTP|location|content-type)"
 done > "$OUT/radio_urls.txt" 2>&1
-# مميزات ١٫٥: المزيد، الحفظ، الإذاعات، التقويم، رمضان، الزكاة، المكتبة
+# مميزات ١٫٥ — كل شاشة من فتحة جديدة للتطبيق (المحاكي في CI بيقع أحيانًا مع حركة الرجوع)
+relaunch() { adb shell am force-stop $PKG; sleep 1; adb shell monkey -p $PKG -c android.intent.category.LAUNCHER 1 >/dev/null; sleep 12; }
+open_more() { relaunch; tap_text "المزيد"; sleep 1; tap_text "$1"; sleep "${2:-3}"; }
 tap_text "المزيد"; sleep 2; shot 40_more
-tap_text "الحفظ"; sleep 3; shot 41_hifz
-adb shell input keyevent KEYCODE_BACK; sleep 2
-tap_text "التقويم الهجري"; sleep 3; shot 45_calendar
-adb shell input keyevent KEYCODE_BACK; sleep 2
-tap_text "حاسبة الزكاة"; sleep 3; shot 46_zakat
-adb shell input keyevent KEYCODE_BACK; sleep 2
-tap_text "الأسماء الحسنى"; sleep 3; shot 47_asma
-adb shell input keyevent KEYCODE_BACK; sleep 2
-tap_text "الأربعون النووية"; sleep 3; tap_text "إنما الأعمال بالنيات"; sleep 2; shot 48_nawawi
-adb shell input keyevent KEYCODE_BACK; sleep 1; adb shell input keyevent KEYCODE_BACK; sleep 2
-tap_text "الرقية الشرعية"; sleep 4; shot 49_ruqyah
-adb shell input keyevent KEYCODE_BACK; sleep 2
-# التفسير: ابن كثير (تحميل من النت)
-tap_text "المصحف"; tap_text "سورة الفاتحة"; sleep 6
+open_more "الحفظ"; shot 41_hifz
+open_more "التقويم الهجري"; shot 45_calendar
+open_more "حاسبة الزكاة"; shot 46_zakat
+open_more "الأسماء الحسنى"; shot 47_asma
+open_more "الأربعون النووية"; tap_text "إنما الأعمال بالنيات"; sleep 2; shot 48_nawawi
+open_more "الرقية الشرعية" 4; shot 49_ruqyah
+open_more "رمضان"; shot 44_ramadan
+adb shell input swipe 540 1800 540 500 400; sleep 1; shot 44b_ramadan_imsakiya
+open_more "الإذاعات"; shot 42_radio
+tap_text "إذاعة القرآن الكريم من القاهرة"; sleep 3; shot 43a_radio_connecting; sleep 10; shot 43_radio_playing
+adb logcat -d | grep -iE "radio|ExoPlayer|Cleartext|HttpDataSource|flutter" | tail -40 > "$OUT/radio_log.txt"
+# التفسير: الميسّر والسعدي وابن كثير (تحميل من النت)
+relaunch; tap_text "المصحف"; tap_text "سورة الفاتحة"; sleep 6
 adb shell input tap 540 900; sleep 2; tap_text "تفسير"; sleep 3; shot 50_tafsir
 tap_text "السعدي"; sleep 3; shot 51_tafsir_saadi
 tap_text "ابن كثير"; sleep 10; shot 52_tafsir_ibnkathir
-adb shell input keyevent KEYCODE_BACK; sleep 1; adb shell input keyevent KEYCODE_BACK; sleep 2
 adb shell dumpsys appwidget > "$OUT/appwidget.txt" 2>&1
-adb shell dumpsys meminfo | head -20 > "$OUT/mem.txt"
-tap_text "المزيد"; sleep 2
-tap_text "الإذاعات"; sleep 3; shot 42_radio
-tap_text "إذاعة القرآن الكريم من القاهرة"; sleep 3; shot 43a_radio_connecting; sleep 10; shot 43_radio_playing
-adb logcat -d | grep -iE "radio|ExoPlayer|Cleartext|HttpDataSource|flutter" | tail -40 > "$OUT/radio_log.txt"
-tap_text "إيقاف"
-adb shell input keyevent KEYCODE_BACK; sleep 2
-tap_text "رمضان"; sleep 3; shot 44_ramadan
-adb shell input swipe 540 1800 540 500 400; sleep 1; shot 44b_ramadan_imsakiya
-adb shell input keyevent KEYCODE_BACK; sleep 2
+relaunch
 tap_text "الرئيسية"
 adb shell input swipe 540 2000 540 900 400; sleep 2
 shot 03_home_scrolled
