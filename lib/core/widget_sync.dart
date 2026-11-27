@@ -7,6 +7,7 @@ import 'arabic.dart';
 import 'hijri.dart';
 import 'khatma.dart';
 import 'prayer.dart';
+import 'prayer_calc.dart';
 import 'quran.dart';
 
 /// بيانات ويدجت الشاشة الرئيسية (الصلاة القادمة + مواقيت اليوم + الورد) — الويدجت نفسه مكتوب بأندرويد
