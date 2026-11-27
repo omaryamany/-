@@ -1,6 +1,9 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
 
 import 'arabic.dart';
 
@@ -231,15 +234,114 @@ class QuranSearch {
 }
 
 /// التفسير الميسّر (مجمع الملك فهد) — ملف لكل سورة، بيتحمّل وقت الحاجة
-class Tafsir {
-  static final Map<int, List<String>> _cache = {};
+enum TafsirKind { muyassar, saadi, ibnKathir }
 
-  static Future<String> of(int g) async {
+/// تفسير آية (أو مجموعة آيات اتفسّرت مع بعض): النص ومن آية لآية
+class TafsirEntry {
+  final String text;
+  final int from, to; // أرقام الآيات داخل السورة
+  const TafsirEntry(this.text, this.from, this.to);
+}
+
+/// التفاسير: الميسّر والسعدي جوه التطبيق (من غير نت)، وابن كثير بيتحمّل سورة سورة أول مرة ويتحفظ
+class Tafsir {
+  static final Map<String, List<String>> _cache = {};
+
+  static String name(TafsirKind k) => switch (k) {
+        TafsirKind.muyassar => 'الميسّر',
+        TafsirKind.saadi => 'السعدي',
+        TafsirKind.ibnKathir => 'ابن كثير',
+      };
+
+  static String source(TafsirKind k) => switch (k) {
+        TafsirKind.muyassar => 'التفسير الميسّر — مجمع الملك فهد لطباعة المصحف الشريف',
+        TafsirKind.saadi => 'تيسير الكريم الرحمن في تفسير كلام المنان — عبد الرحمن بن ناصر السعدي',
+        TafsirKind.ibnKathir => 'تفسير القرآن العظيم — الحافظ ابن كثير',
+      };
+
+  static bool online(TafsirKind k) => k == TafsirKind.ibnKathir;
+
+  /// التفسير الميسّر للآية (للاستخدامات القديمة)
+  static Future<String> of(int g) async => (await entry(g, TafsirKind.muyassar)).text;
+
+  static Future<TafsirEntry> entry(int g, TafsirKind k) async {
     final p = Quran.fromGlobal(g);
-    final list = _cache[p.surah] ??= ((jsonDecode(await rootBundle.loadString('assets/quran/tafsir/${p.surah.toString().padLeft(3, '0')}.json')) as Map)['ayat'] as List)
-        .cast<String>();
-    return list[p.ayah - 1];
+    final list = await _surah(p.surah, k);
+    final i = p.ayah - 1;
+    if (i >= list.length) return TafsirEntry('', p.ayah, p.ayah);
+    // بداية المجموعة: أقرب آية قبلها ليها نص مختلف
+    var from = i;
+    while (from > 0 && (list[from].isEmpty || list[from] == list[from - 1])) {
+      from--;
+    }
+    var to = i;
+    while (to + 1 < list.length && (list[to + 1].isEmpty || list[to + 1] == list[from])) {
+      to++;
+    }
+    return TafsirEntry(list[from], from + 1, to + 1);
   }
+
+  static String _file(int s) => s.toString().padLeft(3, '0');
+
+  static Future<List<String>> _surah(int s, TafsirKind k) async {
+    final key = '${k.name}:$s';
+    final hit = _cache[key];
+    if (hit != null) return hit;
+    late List<String> list;
+    switch (k) {
+      case TafsirKind.muyassar:
+        list = ((jsonDecode(await rootBundle.loadString('assets/quran/tafsir/${_file(s)}.json')) as Map)['ayat'] as List).cast<String>();
+      case TafsirKind.saadi:
+        list = ((jsonDecode(await rootBundle.loadString('assets/quran/tafsir_saadi/${_file(s)}.json')) as Map)['ayat'] as List).cast<String>();
+      case TafsirKind.ibnKathir:
+        list = await _ibnKathir(s);
+    }
+    return _cache[key] = list;
+  }
+
+  static Future<File> _ikFile(int s) async {
+    final dir = Directory('${(await getApplicationSupportDirectory()).path}/tafsir_ibn_kathir');
+    if (!await dir.exists()) await dir.create(recursive: true);
+    return File('${dir.path}/${_file(s)}.json');
+  }
+
+  static Future<bool> ibnKathirReady(int s) async => (await _ikFile(s)).exists();
+
+  static Future<List<String>> _ibnKathir(int s) async {
+    final f = await _ikFile(s);
+    if (await f.exists()) {
+      return (jsonDecode(await f.readAsString()) as List).cast<String>();
+    }
+    Object? err;
+    for (final base in [
+      'https://cdn.jsdelivr.net/gh/spa5k/tafsir_api@main/tafsir/ar-tafsir-ibn-kathir',
+      'https://raw.githubusercontent.com/spa5k/tafsir_api/main/tafsir/ar-tafsir-ibn-kathir',
+    ]) {
+      try {
+        final r = await http.get(Uri.parse('$base/$s.json')).timeout(const Duration(seconds: 40));
+        if (r.statusCode != 200) continue;
+        final raw = (jsonDecode(utf8.decode(r.bodyBytes)) as List).cast<Map>();
+        final n = Quran.surah(s).ayahCount;
+        final out = List<String>.filled(n, '');
+        for (final x in raw) {
+          final a = (x['ayah'] as num).toInt();
+          if (a >= 1 && a <= n) out[a - 1] = _cleanIk(x['text'] as String? ?? '');
+        }
+        await f.writeAsString(jsonEncode(out));
+        return out;
+      } catch (e) {
+        err = e;
+      }
+    }
+    throw Exception('تعذّر تحميل تفسير ابن كثير: $err');
+  }
+
+  /// شيل حواشي فروق النسخ [[...]] والمسافات الزايدة
+  static String _cleanIk(String t) => t
+      .replaceAll(RegExp(r'\[\[[^\]]*\]\]'), '')
+      .replaceAll(RegExp(r'[ \t]+'), ' ')
+      .replaceAll(RegExp(r'\n{3,}'), '\n\n')
+      .trim();
 }
 
 /// أرباع الأحزاب (٢٤٠ ربع) وآيات السجدة

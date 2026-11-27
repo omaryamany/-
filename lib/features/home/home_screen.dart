@@ -17,6 +17,12 @@ import '../mushaf/sheets.dart';
 import '../prayer/prayer_screen.dart';
 import '../shell.dart';
 import '../tasbih/tasbih_screen.dart';
+import '../../core/hijri.dart';
+import '../hifz/hifz_screen.dart';
+import '../listen/radio_screen.dart';
+import '../seasons/calendar_screen.dart';
+import '../seasons/ramadan_screen.dart';
+import '../tools/zakat_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   final ValueChanged<int> onTab;
@@ -43,7 +49,7 @@ class HomeScreen extends StatelessWidget {
               Expanded(
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Text(greeting(), style: t.titleLarge),
-                  Text(longDate(now), style: t.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
+                  Text('${longDate(now)} · ${Hijri.today.label}', style: t.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
                 ]),
               ),
               IconButton.filledTonal(onPressed: () => showSearchSheet(context, onPick: (g) => openMushaf(context, ayah: g)), icon: const Icon(Icons.search_rounded), tooltip: 'بحث في القرآن'),
@@ -51,6 +57,7 @@ class HomeScreen extends StatelessWidget {
             const SizedBox(height: 18),
 
             // ───── ورد اليوم ─────
+            const RamadanCard(),
             (khatma.active ? _WirdCard(onTab: onTab) : const _StartKhatmaCard()).enter(i++),
 
             // ───── الصلاة القادمة ─────
@@ -159,6 +166,16 @@ class HomeScreen extends StatelessWidget {
               Expanded(child: _Quick(icon: Icons.headphones_rounded, label: 'الاستماع', onTap: () => openListen(context))),
               const SizedBox(width: 8),
               Expanded(child: _Quick(icon: Icons.blur_circular_rounded, label: 'المسبحة', onTap: () => openTasbih(context))),
+            ]).enter(i++),
+            const SizedBox(height: 8),
+            Row(children: [
+              Expanded(child: _Quick(icon: Icons.psychology_rounded, label: 'الحفظ', onTap: () => openHifz(context))),
+              const SizedBox(width: 8),
+              Expanded(child: _Quick(icon: Icons.radio_rounded, label: 'الإذاعات', onTap: () => openRadio(context))),
+              const SizedBox(width: 8),
+              Expanded(child: _Quick(icon: Icons.calendar_month_rounded, label: 'التقويم', onTap: () => openCalendar(context))),
+              const SizedBox(width: 8),
+              Expanded(child: _Quick(icon: Icons.calculate_rounded, label: 'الزكاة', onTap: () => openZakat(context))),
             ]).enter(i++),
           ]),
         );

@@ -1,7 +1,7 @@
 /// الأذكار من «حصن المسلم» — الآيات بتتقري من نص المصحف نفسه (مش مكتوبة هنا) عشان تبقى مطابقة.
 library;
 
-enum AdhkarKind { morning, evening, afterPrayer, sleep, waking, mosque, quranDuas, propheticDuas }
+enum AdhkarKind { morning, evening, afterPrayer, sleep, waking, mosque, quranDuas, propheticDuas, ruqyah }
 
 class Dhikr {
   /// نص الذكر (لو مش آيات)
@@ -220,6 +220,7 @@ List<Dhikr> adhkarOf(AdhkarKind k) => switch (k) {
       AdhkarKind.mosque => _mosque,
       AdhkarKind.quranDuas => _quranDuas,
       AdhkarKind.propheticDuas => _propheticDuas,
+      AdhkarKind.ruqyah => _ruqyah,
     };
 
 String adhkarTitle(AdhkarKind k) => switch (k) {
@@ -231,4 +232,53 @@ String adhkarTitle(AdhkarKind k) => switch (k) {
       AdhkarKind.mosque => 'أذكار المسجد والأذان',
       AdhkarKind.quranDuas => 'أدعية من القرآن',
       AdhkarKind.propheticDuas => 'أدعية نبوية',
+      AdhkarKind.ruqyah => 'الرقية الشرعية',
     };
+
+/// الرقية الشرعية: آيات من القرآن (بتتقري من نص المصحف نفسه) + أدعية الرقية الثابتة في السنة
+const _ruqyah = <Dhikr>[
+  Dhikr(quran: [(1, 1, 7)], note: 'الفاتحة', count: 7),
+  Dhikr(quran: [(2, 1, 5)], note: 'أول سورة البقرة'),
+  Dhikr(quran: [(2, 102, 102)], note: 'من سورة البقرة'),
+  Dhikr(quran: [(2, 163, 164)], note: 'من سورة البقرة'),
+  Dhikr(quran: [(2, 255, 257)], note: 'آية الكرسي وما بعدها', count: 3),
+  Dhikr(quran: [(2, 285, 286)], note: 'خواتيم سورة البقرة'),
+  Dhikr(quran: [(3, 18, 19)], note: 'من سورة آل عمران'),
+  Dhikr(quran: [(7, 54, 56)], note: 'من سورة الأعراف'),
+  Dhikr(quran: [(7, 117, 122)], note: 'من سورة الأعراف'),
+  Dhikr(quran: [(10, 79, 82)], note: 'من سورة يونس'),
+  Dhikr(quran: [(20, 65, 69)], note: 'من سورة طه'),
+  Dhikr(quran: [(23, 115, 118)], note: 'خواتيم سورة المؤمنون'),
+  Dhikr(quran: [(37, 1, 10)], note: 'أول سورة الصافات'),
+  Dhikr(quran: [(46, 29, 32)], note: 'من سورة الأحقاف'),
+  Dhikr(quran: [(55, 33, 36)], note: 'من سورة الرحمن'),
+  Dhikr(quran: [(59, 21, 24)], note: 'خواتيم سورة الحشر'),
+  Dhikr(quran: [(72, 1, 9)], note: 'أول سورة الجن'),
+  Dhikr(quran: [(112, 1, 4), (113, 1, 5), (114, 1, 6)], note: 'الإخلاص والمعوذتان', count: 3),
+  Dhikr(
+    text: 'بِسْمِ اللَّهِ أَرْقِيكَ، مِنْ كُلِّ شَيْءٍ يُؤْذِيكَ، مِنْ شَرِّ كُلِّ نَفْسٍ أَوْ عَيْنِ حَاسِدٍ، اللَّهُ يَشْفِيكَ، بِسْمِ اللَّهِ أَرْقِيكَ',
+    note: 'رقية جبريل للنبي ﷺ — رواه مسلم',
+    count: 3,
+  ),
+  Dhikr(
+    text: 'اللَّهُمَّ رَبَّ النَّاسِ، أَذْهِبِ الْبَأْسَ، اشْفِ أَنْتَ الشَّافِي، لَا شِفَاءَ إِلَّا شِفَاؤُكَ، شِفَاءً لَا يُغَادِرُ سَقَمًا',
+    note: 'متفق عليه',
+    count: 3,
+  ),
+  Dhikr(
+    text: 'أَسْأَلُ اللَّهَ الْعَظِيمَ، رَبَّ الْعَرْشِ الْعَظِيمِ، أَنْ يَشْفِيَكَ',
+    note: 'عند المريض — رواه أبو داود والترمذي',
+    count: 7,
+  ),
+  Dhikr(
+    text: 'بِسْمِ اللَّهِ (ثلاثًا)، أَعُوذُ بِاللَّهِ وَقُدْرَتِهِ مِنْ شَرِّ مَا أَجِدُ وَأُحَاذِرُ',
+    note: 'ضع يدك على موضع الألم — رواه مسلم',
+    count: 7,
+  ),
+  Dhikr(
+    text: 'أُعِيذُكَ بِكَلِمَاتِ اللَّهِ التَّامَّةِ، مِنْ كُلِّ شَيْطَانٍ وَهَامَّةٍ، وَمِنْ كُلِّ عَيْنٍ لَامَّةٍ',
+    note: 'كان النبي ﷺ يعوّذ بها الحسن والحسين — رواه البخاري',
+    count: 3,
+  ),
+  Dhikr(text: 'أَعُوذُ بِكَلِمَاتِ اللَّهِ التَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ', note: 'رواه مسلم', count: 3),
+];

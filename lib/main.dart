@@ -1,13 +1,18 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 
 import 'app.dart';
+import 'core/hijri.dart';
 import 'core/khatma.dart';
 import 'core/prayer.dart';
 import 'core/quran.dart';
 import 'core/reminders.dart';
+import 'core/seasonal.dart';
 import 'core/store.dart';
+import 'core/widget_sync.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,6 +29,10 @@ Future<void> main() async {
   await AppStore.instance.load();
   await KhatmaStore.instance.load();
   await Reminders.instance.init();
+  await Hijri.load();
   await PrayerStore.instance.load();
   runApp(const MurattilApp());
+  // بعد ما الواجهة تفتح: تذكيرات المواسم وبيانات الويدجت
+  unawaited(Seasonal.reschedule());
+  unawaited(HomeWidgetSync.update());
 }

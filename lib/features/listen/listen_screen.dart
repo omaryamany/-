@@ -142,6 +142,7 @@ class MiniPlayer extends StatelessWidget {
     return ListenableBuilder(
       listenable: player,
       builder: (context, _) {
+        if (player.radio != null) return _RadioBar(player: player, safeBottom: safeBottom);
         if (!player.active) return const SizedBox.shrink();
         final g = player.current!;
         final p = Quran.fromGlobal(g);
@@ -192,6 +193,51 @@ class MiniPlayer extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+/// شريط الإذاعة الشغالة (بدل شريط التلاوة)
+class _RadioBar extends StatelessWidget {
+  final QuranPlayer player;
+  final bool safeBottom;
+  const _RadioBar({required this.player, required this.safeBottom});
+
+  @override
+  Widget build(BuildContext context) {
+    final t = Theme.of(context).textTheme;
+    return SafeArea(
+      top: false,
+      bottom: safeBottom,
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(10, 4, 10, 6),
+        padding: const EdgeInsets.fromLTRB(12, 6, 6, 6),
+        decoration: BoxDecoration(
+          gradient: AppColors.heroGradient,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [BoxShadow(color: AppColors.pine.withValues(alpha: .3), blurRadius: 14, offset: const Offset(0, 6))],
+        ),
+        child: Row(children: [
+          const Icon(Icons.radio_rounded, color: AppColors.goldLight),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
+              Text(player.radio!, maxLines: 1, overflow: TextOverflow.ellipsis, style: t.titleSmall?.copyWith(color: Colors.white)),
+              Text('بث مباشر', style: t.bodySmall?.copyWith(color: Colors.white70)),
+            ]),
+          ),
+          player.loading
+              ? const Padding(
+                  padding: EdgeInsets.all(12),
+                  child: SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)),
+                )
+              : IconButton(
+                  onPressed: player.toggle,
+                  icon: Icon(player.playing ? Icons.pause_circle_filled_rounded : Icons.play_circle_fill_rounded, color: Colors.white, size: 34),
+                ),
+          IconButton(onPressed: player.stop, icon: const Icon(Icons.close_rounded, color: Colors.white70), tooltip: 'إيقاف'),
+        ]),
+      ),
     );
   }
 }

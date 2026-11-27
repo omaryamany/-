@@ -30,6 +30,10 @@ class MainActivity : AudioServiceActivity() {
                         NotificationManagerCompat.from(this).cancel(AdhanService.NOTIF_ID)
                         result.success(true)
                     }
+                    "widget" -> {
+                        PrayerWidget.save(this, call.argument<String>("json") ?: "{}")
+                        result.success(true)
+                    }
                     "schedule" -> {
                         AdhanScheduler.schedule(this, call.argument<String>("items") ?: "[]")
                         result.success(true)

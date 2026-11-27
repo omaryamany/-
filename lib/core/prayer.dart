@@ -9,6 +9,8 @@ import 'arabic.dart';
 import 'cities.dart';
 import 'prayer_calc.dart';
 import 'reminders.dart';
+import 'seasonal.dart';
+import 'widget_sync.dart';
 
 /// إعدادات وحالة مواقيت الصلاة: الموقع، طريقة الحساب، الأذان، والتنبيه قبله.
 class PrayerStore extends ChangeNotifier {
@@ -230,5 +232,8 @@ class PrayerStore extends ChangeNotifier {
       }
     }
     await Reminders.instance.schedulePrayers(items, volume: volume);
+    // المكان أو الحساب اتغيّر: السحور والتراويح والويدجت بيعتمدوا على المواقيت
+    await Seasonal.reschedule();
+    await HomeWidgetSync.update();
   }
 }

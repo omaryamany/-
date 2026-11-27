@@ -38,6 +38,16 @@ class Reminders extends ChangeNotifier {
   /// تذكير صيام الاثنين والخميس (الليلة اللي قبلها)
   bool fastingOn = false;
 
+  /// تذكير بالمناسبات وأيام الصيام المستحب (الأيام البيض، عرفة، عاشوراء، ستة شوال…)
+  bool occasionsOn = false;
+
+  /// رمضان: تذكير السحور (قبل الفجر بكام دقيقة، ٠ = متوقف) وتذكير التراويح
+  int suhoorBefore = 0;
+  bool taraweehOn = false;
+
+  /// الإمساك قبل الفجر بكام دقيقة (احتياط — الأكل جائز حتى أذان الفجر)
+  int imsakMinutes = 10;
+
   /// الإشعار اللي المستخدم ضغط عليه ('wird' أو 'kahf') — الواجهة بتفتح المكان المناسب
   final tapped = ValueNotifier<String?>(null);
 
@@ -55,6 +65,10 @@ class Reminders extends ChangeNotifier {
     eveningM = _p.getInt('rem:eveningM') ?? 0;
     dhikrEvery = _p.getInt('rem:dhikrEvery') ?? 0;
     fastingOn = _p.getBool('rem:fasting') ?? false;
+    occasionsOn = _p.getBool('rem:occasions') ?? false;
+    suhoorBefore = _p.getInt('rem:suhoor') ?? 0;
+    taraweehOn = _p.getBool('rem:taraweeh') ?? false;
+    imsakMinutes = _p.getInt('rem:imsak') ?? 10;
 
     try {
       tzdata.initializeTimeZones();
@@ -336,5 +350,48 @@ class Reminders extends ChangeNotifier {
     }
     notifyListeners();
     return true;
+  }
+
+  /// إعدادات المواسم (المناسبات ورمضان) — الجدولة نفسها في seasonal.dart
+  Future<bool> setSeasonal({bool? occasions, int? suhoor, bool? taraweeh, int? imsak}) async {
+    final turningOn = (occasions ?? false) || (suhoor != null && suhoor > 0) || (taraweeh ?? false);
+    if (turningOn && !await _askPermission()) return false;
+    occasionsOn = occasions ?? occasionsOn;
+    suhoorBefore = suhoor ?? suhoorBefore;
+    taraweehOn = taraweeh ?? taraweehOn;
+    imsakMinutes = imsak ?? imsakMinutes;
+    await _p.setBool('rem:occasions', occasionsOn);
+    await _p.setInt('rem:suhoor', suhoorBefore);
+    await _p.setBool('rem:taraweeh', taraweehOn);
+    await _p.setInt('rem:imsak', imsakMinutes);
+    notifyListeners();
+    return true;
+  }
+
+  /// جدولة مجموعة تذكيرات لمرة واحدة (بتمسح القديمة في نفس النطاق الأول)
+  Future<void> oneShots(int base, int max, List<(DateTime, String, String)> items,
+      {required String channel, required String channelName, String payload = 'home'}) async {
+    try {
+      for (var i = 0; i < max; i++) {
+        await _n.cancel(base + i);
+      }
+      final exact = await exactAllowed();
+      final now = DateTime.now();
+      var i = 0;
+      for (final (at, title, body) in items) {
+        if (!at.isAfter(now) || i >= max) continue;
+        await _n.zonedSchedule(
+          base + i++,
+          title,
+          body,
+          tz.TZDateTime.from(at, tz.local),
+          _details(channel, channelName, channelName),
+          androidScheduleMode: exact ? AndroidScheduleMode.exactAllowWhileIdle : AndroidScheduleMode.inexactAllowWhileIdle,
+          payload: payload,
+        );
+      }
+    } catch (e) {
+      debugPrint('one-shot reminders: $e');
+    }
   }
 }

@@ -6,6 +6,7 @@ import '../../core/theme.dart';
 import '../../core/ui.dart';
 import 'adhkar_screen.dart';
 import '../tasbih/tasbih_screen.dart';
+import '../library/library_screens.dart';
 
 /// ألوان وأيقونة كل قسم أذكار
 class _Look {
@@ -24,6 +25,7 @@ const _looks = <AdhkarKind, _Look>{
   AdhkarKind.mosque: _Look(Icons.account_balance_rounded, [Color(0xFF2B4C86), Color(0xFF0F1F3D)], 'الدخول والخروج وبعد الأذان'),
   AdhkarKind.quranDuas: _Look(Icons.menu_book_rounded, [Color(0xFFC9733F), Color(0xFF85391A)], 'ربنا آتنا…'),
   AdhkarKind.propheticDuas: _Look(Icons.volunteer_activism_rounded, [Color(0xFF3E9471), Color(0xFF1C5440)], 'من السنة النبوية'),
+  AdhkarKind.ruqyah: _Look(Icons.healing_rounded, [Color(0xFF2A7FA0), Color(0xFF14405A)], 'من القرآن والسنة'),
 };
 
 /// تبويب الأذكار: أقسام على شكل محاريب ملوّنة + تقدّم النهارده في كل قسم
@@ -44,7 +46,7 @@ class _AdhkarHomeState extends State<AdhkarHome> {
     final t = Theme.of(context).textTheme;
     final h = DateTime.now().hour;
     final suggested = h >= 4 && h < 12 ? AdhkarKind.morning : (h >= 15 && h < 21 ? AdhkarKind.evening : (h >= 21 || h < 4 ? AdhkarKind.sleep : AdhkarKind.afterPrayer));
-    final kinds = AdhkarKind.values;
+    final kinds = AdhkarKind.values.where((k) => k != AdhkarKind.ruqyah).toList();
     return SafeArea(
       bottom: false,
       child: CustomScrollView(slivers: [
@@ -89,6 +91,18 @@ class _AdhkarHomeState extends State<AdhkarHome> {
               (context, i) => _ArchTile(kind: kinds[i], onTap: () => _open(kinds[i])).enter(i),
               childCount: kinds.length,
             ),
+          ),
+        ),
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(14, 0, 14, 28),
+          sliver: SliverToBoxAdapter(
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              const SectionTitle('المكتبة'),
+              const SizedBox(height: 8),
+              _LibTile(icon: Icons.healing_rounded, title: 'الرقية الشرعية', sub: 'آيات الرقية وأدعيتها من السنة', onTap: () => _open(AdhkarKind.ruqyah)),
+              _LibTile(icon: Icons.auto_awesome_rounded, title: 'أسماء الله الحسنى', sub: '٩٩ اسمًا مع معانيها', onTap: () => openAsma(context)),
+              _LibTile(icon: Icons.format_quote_rounded, title: 'الأربعون النووية', sub: '٤٢ حديثًا من جوامع كلمه ﷺ', onTap: () => openNawawi(context)),
+            ]),
           ),
         ),
       ]),
@@ -213,4 +227,39 @@ class _ArchClipper extends CustomClipper<Path> {
 
   @override
   bool shouldReclip(covariant CustomClipper<Path> old) => false;
+}
+
+class _LibTile extends StatelessWidget {
+  final IconData icon;
+  final String title, sub;
+  final VoidCallback onTap;
+  const _LibTile({required this.icon, required this.title, required this.sub, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final t = Theme.of(context).textTheme;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: SoftCard(
+        onTap: onTap,
+        padding: const EdgeInsets.fromLTRB(14, 12, 10, 12),
+        child: Row(children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(color: AppColors.turquoise.withValues(alpha: .14), borderRadius: BorderRadius.circular(14)),
+            child: Icon(icon, color: AppColors.turquoise),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(title, style: t.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
+              Text(sub, style: t.bodySmall),
+            ]),
+          ),
+          const Icon(Icons.chevron_left_rounded),
+        ]),
+      ),
+    );
+  }
 }

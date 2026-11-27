@@ -4,6 +4,7 @@ import '../core/khatma.dart';
 import '../core/theme.dart';
 import '../core/quran.dart';
 import '../core/reminders.dart';
+import '../core/widget_sync.dart';
 import 'celebration.dart';
 import 'home/home_screen.dart';
 import 'index/index_screen.dart';
@@ -15,6 +16,8 @@ import 'adhkar/adhkar_screen.dart';
 import 'listen/now_playing.dart';
 import 'listen/listen_screen.dart';
 import 'prayer/prayer_screen.dart';
+import 'seasons/calendar_screen.dart';
+import 'seasons/ramadan_screen.dart';
 import 'settings/settings_screen.dart';
 
 /// فتح المصحف على صفحة (أو آية) — [wird] بيظهر شريط ورد اليوم فوق
@@ -35,12 +38,13 @@ class Shell extends StatefulWidget {
   State<Shell> createState() => _ShellState();
 }
 
-class _ShellState extends State<Shell> {
+class _ShellState extends State<Shell> with WidgetsBindingObserver {
   int _tab = 0;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     KhatmaStore.instance.events.addListener(_onKhatmaEvent);
     Reminders.instance.tapped.addListener(_onNotification);
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -54,9 +58,16 @@ class _ShellState extends State<Shell> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     KhatmaStore.instance.events.removeListener(_onKhatmaEvent);
     Reminders.instance.tapped.removeListener(_onNotification);
     super.dispose();
+  }
+
+  /// لما التطبيق يروح للخلفية: تحديث الويدجت (الورد اتغيّر غالبًا)
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused) HomeWidgetSync.update();
   }
 
   void _onKhatmaEvent() {
@@ -79,6 +90,10 @@ class _ShellState extends State<Shell> {
       openAdhkar(context, AdhkarKind.morning);
     } else if (p == 'adhkar_evening') {
       openAdhkar(context, AdhkarKind.evening);
+    } else if (p == 'ramadan') {
+      openRamadan(context);
+    } else if (p == 'calendar') {
+      openCalendar(context);
     } else if (p == 'dhikr' || p == 'fasting') {
       setState(() => _tab = 0);
     } else if (KhatmaStore.instance.active && !KhatmaStore.instance.finished) {

@@ -47,6 +47,13 @@ class QuranPlayer extends ChangeNotifier {
   final error = ValueNotifier<String?>(null);
 
   bool get active => current != null;
+
+  /// الإذاعة الشغالة دلوقتي (اسمها)، null = مفيش إذاعة
+  String? radio;
+
+  /// عدد مرات تكرار المقطع كله (وضع الحفظ): ٠ = بلا حدّ
+  int rangeRepeat = 1;
+  int _rangeDone = 0;
   String get reciterName => Quran.reciter(AppStore.instance.reciter).name;
 
   void _init() {
@@ -73,8 +80,14 @@ class QuranPlayer extends ChangeNotifier {
 
   /// تشغيل من آية [from]: لحد [to] لو محدد، وإلا لآخر السورة ثم السور اللي بعدها.
   /// [repeat] عدد مرات تكرار كل آية.
-  Future<void> play(int from, {int? to, int repeat = 1, bool nextSurah = true}) async {
+  /// [range] عدد مرات تكرار المقطع كله (وضع الحفظ، ٠ = بلا حدّ). [keepRange] للاستدعاءات الداخلية اللي بتكمّل نفس الجلسة.
+  Future<void> play(int from, {int? to, int repeat = 1, bool nextSurah = true, int range = 1, bool keepRange = false}) async {
     _init();
+    radio = null;
+    if (!keepRange) {
+      rangeRepeat = range;
+      _rangeDone = 0;
+    }
     final s = Quran.surah(Quran.fromGlobal(from).surah);
     final end = (to == null || to > s.end) ? s.end : to;
     _to = to;
@@ -125,8 +138,13 @@ class QuranPlayer extends ChangeNotifier {
       stop();
       return;
     }
+    // وضع الحفظ: تكرار المقطع كله عدد مرات محدد (أو بلا حدّ)
+    if (_to != null && _queue.isNotEmpty && (rangeRepeat == 0 || ++_rangeDone < rangeRepeat)) {
+      play(_queue.first, to: _to, repeat: _repeat, nextSurah: false, keepRange: true);
+      return;
+    }
     if (surahLoop && _queue.isNotEmpty) {
-      play(_queue.first, to: _to, repeat: _repeat, nextSurah: _nextSurah);
+      play(_queue.first, to: _to, repeat: _repeat, nextSurah: _nextSurah, keepRange: true);
       return;
     }
     if (last != null && _nextSurah && last < Quran.totalAyat) {
@@ -152,7 +170,7 @@ class QuranPlayer extends ChangeNotifier {
     _repeat = n.clamp(1, 20);
     final c = current;
     if (c != null) {
-      await play(c, to: _to, repeat: _repeat, nextSurah: _nextSurah);
+      await play(c, to: _to, repeat: _repeat, nextSurah: _nextSurah, keepRange: true);
     } else {
       notifyListeners();
     }
@@ -161,7 +179,7 @@ class QuranPlayer extends ChangeNotifier {
   /// بعد تغيير القارئ: كمّل من نفس الآية بالصوت الجديد
   Future<void> restartFromCurrent() async {
     final c = current;
-    if (c != null) await play(c, to: _to, repeat: _repeat, nextSurah: _nextSurah);
+    if (c != null) await play(c, to: _to, repeat: _repeat, nextSurah: _nextSurah, keepRange: true);
   }
 
   /// مؤقت النوم بالدقايق (٠ = إلغاء، -١ = آخر السورة)
@@ -188,12 +206,38 @@ class QuranPlayer extends ChangeNotifier {
   }
 
   Future<void> toggle() async {
-    if (!active) return;
+    if (!active && radio == null) return;
     playing ? await _player.pause() : await _player.play();
+  }
+
+  /// تشغيل إذاعة قرآن (بث مباشر) — بتكمّل في الخلفية زي التلاوة
+  Future<void> playRadio(String url, String name) async {
+    _init();
+    await _player.stop();
+    current = null;
+    _queue = [];
+    _to = null;
+    radio = name;
+    loading = true;
+    notifyListeners();
+    try {
+      await _player.setAudioSource(AudioSource.uri(Uri.parse(url),
+          tag: MediaItem(id: 'radio:$url', title: name, album: 'بث مباشر', artist: 'مُرتِّل')));
+      await _player.setSpeed(1);
+      unawaited(_player.play());
+    } catch (e) {
+      debugPrint('radio: $e');
+      radio = null;
+      loading = false;
+      error.value = 'تعذّر تشغيل الإذاعة — تأكد من الاتصال بالإنترنت';
+      notifyListeners();
+    }
   }
 
   Future<void> stop() async {
     await _player.stop();
+    radio = null;
+    rangeRepeat = 1;
     current = null;
     playing = false;
     loading = false;
@@ -221,7 +265,7 @@ class QuranPlayer extends ChangeNotifier {
     if (i >= 0) {
       await _player.seek(Duration.zero, index: i);
     } else if (c > 1) {
-      await play(c - 1, to: _to, repeat: _repeat, nextSurah: _nextSurah);
+      await play(c - 1, to: _to, repeat: _repeat, nextSurah: _nextSurah, keepRange: true);
     }
   }
 }
