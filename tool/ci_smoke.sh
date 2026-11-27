@@ -75,6 +75,8 @@ sleep 4; shot 13_now_playing
 adb shell input keyevent KEYCODE_BACK; sleep 2
 
 # مميزات ١٫٥: المزيد، الحفظ، الإذاعات، التقويم، رمضان، الزكاة، المكتبة
+adb shell am force-stop $PKG; sleep 2
+adb shell monkey -p $PKG -c android.intent.category.LAUNCHER 1; sleep 20
 tap_text "المزيد"; sleep 2; shot 40_more
 tap_text "الحفظ"; sleep 3; shot 41_hifz
 adb shell input keyevent KEYCODE_BACK; sleep 2
@@ -100,10 +102,7 @@ adb shell input tap 540 900; sleep 2; tap_text "تفسير"; sleep 3; shot 50_ta
 tap_text "السعدي"; sleep 3; shot 51_tafsir_saadi
 tap_text "ابن كثير"; sleep 10; shot 52_tafsir_ibnkathir
 adb shell input keyevent KEYCODE_BACK; sleep 1; adb shell input keyevent KEYCODE_BACK; sleep 2
-# الويدجت: إضافة للشاشة الرئيسية عبر appwidget
-adb shell input keyevent KEYCODE_HOME; sleep 2
 adb shell dumpsys appwidget > "$OUT/appwidget.txt" 2>&1
-adb shell monkey -p $PKG -c android.intent.category.LAUNCHER 1; sleep 6
 
 # موبايل صغير (٣٦٠×٦٤٠) وخط النظام كبير: التنسيق لازم يفضل سليم
 adb shell wm size 720x1280
